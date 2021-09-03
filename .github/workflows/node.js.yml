@@ -1,30 +1,49 @@
-# This workflow will do a clean install of node dependencies, cache/restore them, build the source code and run tests across different versions of node
+# This workflow will do a clean install of node dependencies, build the source code and run tests across different versions of node
 # For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
 
 name: Node.js CI
 
 on:
   push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
+    branches: [master]
 
 jobs:
   build:
-
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     strategy:
       matrix:
-        node-version: [14.x]
+        node-version: [10.x]
+        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v2
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
-    - run: npm ci
-    - run: npm run build --if-present
-    - run: npm test
+      - uses: actions/checkout@v2
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Create .env file
+        uses: ozaytsev86/create-env-file@v1
+        with:
+          ENV_NODE_ENV: ${{ secrets.NODE_ENV }}
+          ENV_PORT: ${{ secrets.PORT }}
+          ENV_JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          ENV_DB_URI_JOBS: ${{ secrets.DB_URI_JOBS }}
+          ENV_SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
+          ENV_SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
+          ENV_SPOTIFY_ACCESS_TOKEN: ${{ secrets.SPOTIFY_ACCESS_TOKEN }}
+          ENV_SPOTIFY_REFRESH_TOKEN: ${{ secrets.SPOTIFY_REFRESH_TOKEN }}
+          ENV_TIKTOK_SECRET: ${{ secrets.TIKTOK_SECRET }}
+          ENV_TIKTOK_APP_ID: ${{ secrets.TIKTOK_APP_ID }}
+          ENV_TIKTOK_ACCESS_TOKEN: ${{ secrets.TIKTOK_ACCESS_TOKEN }}
+          ENV_TITOK_ADVERTISER_ID: ${{ secrets.TITOK_ADVERTISER_ID }}
+          ENV_SNAPCHAT_SECRET: ${{ secrets.SNAPCHAT_SECRET }}
+          ENV_SNAPCHAT_APP_ID: ${{ secrets.SNAPCHAT_APP_ID }}
+          ENV_SNAPCHAT_ACCESS_TOKEN: ${{ secrets.SNAPCHAT_ACCESS_TOKEN }}
+          ENV_SNAPCHAT_REFRESH_TOKEN: ${{ secrets.SNAPCHAT_REFRESH_TOKEN }}
+          ENV_FACEBOOK_ACCESS_TOKEN: ${{ secrets.FACEBOOK_ACCESS_TOKEN }}
+          ENV_FACEBOOK_ACCESS_TOKEN_LONG: ${{ secrets.FACEBOOK_ACCESS_TOKEN_LONG }}
+
+      - run: npm i
+      - run: pm2 reload server
