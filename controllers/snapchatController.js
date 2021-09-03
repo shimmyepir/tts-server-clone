@@ -40,15 +40,16 @@ exports.getDailyStats = catchAsyncErrors(async (req, res, next) => {
     endDate,
     "DAY"
   );
-  const followers = await followersDaily(spotifyId, false, 27);
   let dailySpends = [];
-
   data.timeseries_stats[0].timeseries_stat.timeseries.forEach((item) => {
     dailySpends.push({
       date: format(new Date(item.start_time), "yyyy-MM-dd"),
       spend: item.stats.spend,
     });
   });
+
+  const followers = await followersDaily(spotifyId, false, 27);
+
   const dailySpendPerFollower = formatDailySpendPerFollowers(
     dailySpends,
     followers,
