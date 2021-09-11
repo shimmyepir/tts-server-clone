@@ -88,6 +88,7 @@ exports.getDailyStats = catchAsyncErrors(async (req, res) => {
       ]),
     },
   });
+  if (!data.data.list) return next(new AppError("Error fetching data", 500));
   const spends = [];
   data.data.list.forEach((item) => {
     spends.push({
