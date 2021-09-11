@@ -59,6 +59,7 @@ agenda.define("update followers", async (job, done) => {
   }
 });
 
-// agenda.on("ready", async () => await agenda.start());
+if (process.env.NODE_ENV === "production")
+  agenda.on("ready", async () => await agenda.start());
 
 module.exports = agenda;
