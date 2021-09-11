@@ -66,6 +66,11 @@ exports.searchPlaylist = catchAsyncErrors(async (req, res) => {
   res.status(200).json({ playlists });
 });
 
+exports.getPlaylists = catchAsyncErrors(async (req, res) => {
+  const playlists = await Playlist.find();
+  res.status(200).json({ playlists });
+});
+
 const getFollowersBetweenDates = async (
   spotifyId,
   startDate,

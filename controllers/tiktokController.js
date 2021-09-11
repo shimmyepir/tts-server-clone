@@ -55,7 +55,7 @@ exports.getCampaign = catchAsyncErrors(async (req, res, next) => {
   res.status(200).json({ metrics: data.data.list[0].metrics, followers });
 });
 
-exports.getDailyStats = catchAsyncErrors(async (req, res) => {
+exports.getDailyStats = catchAsyncErrors(async (req, res, next) => {
   const { campaignId, spotifyId } = req.query;
   const endDate = format(new Date(), "yyyy-MM-dd");
   const startDate = format(sub(new Date(endDate), { days: 26 }), "yyyy-MM-dd");
