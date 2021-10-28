@@ -52,6 +52,7 @@ exports.getCampaign = catchAsyncErrors(async (req, res, next) => {
     endDate
   );
   if (!data.data.list) return next(new AppError("invalid Id", 400));
+
   res.status(200).json({ metrics: data.data.list[0].metrics, followers });
 });
 
