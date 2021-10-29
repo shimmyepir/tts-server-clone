@@ -29,8 +29,8 @@ exports.getFollowers = catchAsyncErrors(async (req, res) => {
   const followers = await PlaylistFollowers.find({
     spotifyId: id,
     createdAt: {
-      $gte: utcToZonedTime(startOfDay(new Date(date)), timeZone),
-      $lte: utcToZonedTime(endOfDay(new Date(date)), timeZone),
+      $gte: startOfDay(new Date(date)),
+      $lte: endOfDay(new Date(date)),
     },
   });
   res.status(200).json({ followers });
