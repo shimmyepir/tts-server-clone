@@ -1,9 +1,10 @@
+const { startOfDay, endOfDay, sub, format } = require("date-fns");
+const { utcToZonedTime } = require("date-fns-tz");
 const Playlist = require("../models/Playlist");
 const PlaylistFollowers = require("../models/PlaylistFollowers");
 const catchAsyncErrors = require("../utils/catchAsyncErrors");
 const { spotifyWebApi } = require("../utils/spotify");
 const agenda = require("../jobs/agenda");
-const { startOfDay, endOfDay, sub, format } = require("date-fns");
 
 exports.addPlaylist = catchAsyncErrors(async (req, res) => {
   const { id } = req.params;
@@ -24,11 +25,12 @@ exports.addPlaylist = catchAsyncErrors(async (req, res) => {
 exports.getFollowers = catchAsyncErrors(async (req, res) => {
   const { id } = req.params;
   const { date } = req.query;
+  const timeZone = "Europe/Berlin";
   const followers = await PlaylistFollowers.find({
     spotifyId: id,
     createdAt: {
-      $gte: startOfDay(new Date(date)),
-      $lte: endOfDay(new Date(date)),
+      $gte: utcToZonedTime(startOfDay(new Date(date)), timeZone),
+      $lte: utcToZonedTime(endOfDay(new Date(date)), timeZone),
     },
   });
   res.status(200).json({ followers });
