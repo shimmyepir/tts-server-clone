@@ -9,7 +9,7 @@ const { format, sub } = require("date-fns");
 const { formatDailySpendPerFollowers } = require("../utils/helpers");
 
 const axiosClient = axios.create({
-  baseURL: "https://ads.tiktok.com/open_api/v1.2/",
+  baseURL: "https://business-api.tiktok.com/open_api/v1.2/",
   headers: {
     "Access-Token": process.env.TIKTOK_ACCESS_TOKEN,
   },
@@ -51,7 +51,8 @@ exports.getCampaign = catchAsyncErrors(async (req, res, next) => {
     startDate,
     endDate
   );
-  if (!data.data.list) return next(new AppError("invalid Id", 400));
+  // if(data.data.list[])
+  if (!data.data.list[0]) return next(new AppError("invalid Id", 400));
 
   res.status(200).json({ metrics: data.data.list[0].metrics, followers });
 });
