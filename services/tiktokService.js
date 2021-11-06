@@ -1,12 +1,5 @@
-const axios = require("axios").default;
+const axios = require("axios");
 const { format, sub } = require("date-fns");
-const catchAsyncErrors = require("../utils/catchAsyncErrors");
-const {
-  getFollowersBetweenDates,
-  followersDaily,
-} = require("./playlistController");
-const AppError = require("../utils/AppError");
-const { formatDailySpendPerFollowers } = require("../utils/helpers");
 
 const axiosClient = axios.create({
   baseURL: "https://business-api.tiktok.com/open_api/v1.2/",
@@ -15,12 +8,10 @@ const axiosClient = axios.create({
   },
 });
 
-exports.getCampaign = catchAsyncErrors(async (req, res, next) => {
-  const { startDate, endDate, campaignId, spotifyId } = req.query;
-
+exports.getCampaign = async (startDate, endDate, campaignId, advertiserID) => {
   const { data } = await axiosClient.get("/reports/integrated/get", {
     params: {
-      advertiser_id: process.env.TITOK_ADVERTISER_ID,
+      advertiser_id: advertiserID,
       report_type: "BASIC",
       dimensions: JSON.stringify(["campaign_id"]),
       data_level: "AUCTION_CAMPAIGN",
@@ -46,25 +37,16 @@ exports.getCampaign = catchAsyncErrors(async (req, res, next) => {
       ]),
     },
   });
-  const followers = await getFollowersBetweenDates(
-    spotifyId,
-    startDate,
-    endDate
-  );
-  // if(data.data.list[])
-  if (!data.data.list[0]) return next(new AppError("invalid Id", 400));
+  if (!data.data.list[0]) return null;
+  return data.data.list[0].metrics;
+};
 
-  res.status(200).json({ metrics: data.data.list[0].metrics, followers });
-});
-
-exports.getDailyStats = catchAsyncErrors(async (req, res, next) => {
-  const { campaignId, spotifyId } = req.query;
+exports.getDailyStats = async (campaignId, advertiserId) => {
   const endDate = format(new Date(), "yyyy-MM-dd");
   const startDate = format(sub(new Date(endDate), { days: 26 }), "yyyy-MM-dd");
-
   const { data } = await axiosClient.get("/reports/integrated/get", {
     params: {
-      advertiser_id: process.env.TITOK_ADVERTISER_ID,
+      advertiser_id: advertiserId,
       report_type: "BASIC",
       dimensions: JSON.stringify(["campaign_id", "stat_time_day"]),
       data_level: "AUCTION_CAMPAIGN",
@@ -90,7 +72,7 @@ exports.getDailyStats = catchAsyncErrors(async (req, res, next) => {
       ]),
     },
   });
-  if (!data.data.list) return next(new AppError("Error fetching data", 500));
+  if (!data.data.list) return null;
   const spends = [];
   data.data.list.forEach((item) => {
     spends.push({
@@ -101,11 +83,5 @@ exports.getDailyStats = catchAsyncErrors(async (req, res, next) => {
   const dailySpends = spends.sort(
     (a, b) => new Date(a.date) - new Date(b.date)
   );
-  const followers = await followersDaily(spotifyId, false, 27);
-
-  const dailySpendPerFollower = formatDailySpendPerFollowers(
-    dailySpends,
-    followers
-  );
-  res.status(200).json({ dailySpendPerFollower });
-});
+  return dailySpends;
+};

@@ -1,5 +1,23 @@
 const mongoose = require("mongoose");
 
+const campaignSchema = new mongoose.Schema({
+  campaign_id: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+  platform: {
+    type: String,
+    required: true,
+  },
+  user: {
+    type: String,
+  },
+  advertiser_id: {
+    type: String,
+  },
+});
+
 const playlistSchema = new mongoose.Schema(
   {
     name: {
@@ -21,6 +39,10 @@ const playlistSchema = new mongoose.Schema(
     adPlatform: {
       type: String,
     },
+    country: {
+      type: String,
+    },
+    campaigns: [campaignSchema],
   },
   { timestamps: true }
 );

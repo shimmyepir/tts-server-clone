@@ -1,15 +1,13 @@
-const axios = require("axios").default;
+const { startOfDay, add, format, sub } = require("date-fns");
 const catchAsyncErrors = require("../utils/catchAsyncErrors");
 const {
   getFollowersBetweenDates,
   followersDaily,
 } = require("./playlistController");
-const AppError = require("../utils/AppError");
 const snapchat = require("../utils/snapchat");
-const { startOfDay, add, format, sub } = require("date-fns");
 const { formatDailySpendPerFollowers } = require("../utils/helpers");
 
-exports.getCampaign = catchAsyncErrors(async (req, res, next) => {
+exports.getCampaign = catchAsyncErrors(async (req, res) => {
   const { startDate, endDate, campaignId, spotifyId } = req.query;
   let reportEndDate = endDate;
   if (startDate === endDate) {
@@ -30,7 +28,7 @@ exports.getCampaign = catchAsyncErrors(async (req, res, next) => {
     .json({ metrics: data.total_stats[0].total_stat.stats, followers });
 });
 
-exports.getDailyStats = catchAsyncErrors(async (req, res, next) => {
+exports.getDailyStats = catchAsyncErrors(async (req, res) => {
   const { campaignId, spotifyId } = req.query;
   const endDate = startOfDay(new Date());
   const startDate = startOfDay(sub(endDate, { days: 27 }));
@@ -40,7 +38,7 @@ exports.getDailyStats = catchAsyncErrors(async (req, res, next) => {
     endDate,
     "DAY"
   );
-  let dailySpends = [];
+  const dailySpends = [];
   data.timeseries_stats[0].timeseries_stat.timeseries.forEach((item) => {
     dailySpends.push({
       date: format(new Date(item.start_time), "yyyy-MM-dd"),

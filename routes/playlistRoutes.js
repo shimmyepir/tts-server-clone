@@ -8,6 +8,10 @@ const {
   followersPerDayPerPeriod,
   getPlaylists,
   deletePlaylist,
+  addCampaign,
+  removeCampaign,
+  getCampaignsReport,
+  getDailyCampaignsReport,
 } = require("../controllers/playlistController");
 
 router.get("/", getPlaylists);
@@ -20,5 +24,8 @@ router
   .delete(deletePlaylist);
 router.route("/:id/followers").get(getFollowers);
 router.get("/:id/followers-per-day", followersPerDayPerPeriod);
+router.route("/:id/campaigns").post(addCampaign).delete(removeCampaign);
+router.get("/:id/campaigns-report", getCampaignsReport);
+router.get("/:id/campaigns-report-daily", getDailyCampaignsReport);
 
 module.exports = router;

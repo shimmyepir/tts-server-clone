@@ -4,7 +4,13 @@ const PlaylistFollowers = require("../models/PlaylistFollowers");
 const catchAsyncErrors = require("../utils/catchAsyncErrors");
 const { spotifyWebApi } = require("../utils/spotify");
 const agenda = require("../jobs/agenda");
-const { deletePlaylist } = require("../services/playlistServices");
+const AppError = require("../utils/AppError");
+const {
+  getDailyCampaignsData,
+  getPlaylistCampaignsData,
+  getFollowersBetweenDates,
+  deletePlaylist,
+} = require("../services/playlistServices");
 
 exports.addPlaylist = catchAsyncErrors(async (req, res) => {
   const { id } = req.params;
@@ -78,32 +84,6 @@ exports.getPlaylists = catchAsyncErrors(async (req, res) => {
   res.status(200).json({ playlists });
 });
 
-const getFollowersBetweenDates = async (
-  spotifyId,
-  startDate,
-  endDate,
-  returnTotal
-) => {
-  const followers = await PlaylistFollowers.find({
-    spotifyId,
-    createdAt: {
-      $gte: startOfDay(new Date(startDate)),
-      $lte: endOfDay(new Date(endDate)),
-    },
-  }).sort("createdAt");
-
-  if (!followers.length) {
-    return 0;
-  } else {
-    if (returnTotal) {
-      if (followers.length) return followers[followers.length - 1].followers;
-      else return 0;
-    } else {
-      return followers[followers.length - 1].followers - followers[0].followers;
-    }
-  }
-};
-
 const followersDaily = async (id, total, days = 27) => {
   const endDate = endOfDay(new Date());
   const dates = [];
@@ -127,5 +107,51 @@ exports.followersPerDayPerPeriod = catchAsyncErrors(async (req, res) => {
   res.status(200).json({ followersPerDay });
 });
 
-exports.getFollowersBetweenDates = getFollowersBetweenDates;
+exports.addCampaign = catchAsyncErrors(async (req, res, next) => {
+  const { id } = req.params;
+  const { campaignId, platform, user, advertiserId } = req.body;
+  if (platform === "tiktok" && !advertiserId) {
+    return next(new AppError("Advertiser Id is required for tiktok", 400));
+  }
+  const playlist = await Playlist.findOne({ spotifyId: id });
+  playlist.campaigns.push({
+    campaign_id: campaignId,
+    platform,
+    user,
+    advertiser_id: advertiserId,
+  });
+  await playlist.save();
+  res.status(200).json({ playlist });
+});
+
+exports.removeCampaign = catchAsyncErrors(async (req, res) => {
+  const { id } = req.params;
+  const { campaignId } = req.body;
+  await Playlist.updateOne(
+    { spotifyId: id },
+    { $pull: { campaigns: { campaign_id: campaignId } } }
+  );
+  res.status(204);
+});
+
+exports.getCampaignsReport = catchAsyncErrors(async (req, res, next) => {
+  const { id } = req.params;
+  const { startDate, endDate } = req.query;
+  const playlist = await Playlist.findOne({ spotifyId: id });
+  if (playlist.campaigns.length < 1)
+    return next(new AppError("No campaigns found", 400));
+  const report = await getPlaylistCampaignsData(playlist, startDate, endDate);
+  const followers = await getFollowersBetweenDates(id, startDate, endDate);
+  res.status(200).json({ ...report, followers });
+});
+
+exports.getDailyCampaignsReport = catchAsyncErrors(async (req, res, next) => {
+  const { id } = req.params;
+  const playlist = await Playlist.findOne({ spotifyId: id });
+  if (playlist.campaigns.length < 1)
+    return next(new AppError("No campaigns found", 400));
+  const metrics = await getDailyCampaignsData(playlist);
+  res.status(200).json({ metrics });
+});
+
 exports.followersDaily = followersDaily;

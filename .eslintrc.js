@@ -17,6 +17,8 @@ module.exports = {
     "operator-linebreak": "off",
     "no-console": "off",
     "no-param-reassign": "off",
+    "no-plusplus": "off",
+    "object-curly-newline": "off",
     indent: "off",
     "comma-dangle": [
       "error",
