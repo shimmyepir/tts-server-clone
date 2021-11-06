@@ -1,10 +1,10 @@
 const { startOfDay, endOfDay, sub, format } = require("date-fns");
-const { utcToZonedTime } = require("date-fns-tz");
 const Playlist = require("../models/Playlist");
 const PlaylistFollowers = require("../models/PlaylistFollowers");
 const catchAsyncErrors = require("../utils/catchAsyncErrors");
 const { spotifyWebApi } = require("../utils/spotify");
 const agenda = require("../jobs/agenda");
+const { deletePlaylist } = require("../services/playlistServices");
 
 exports.addPlaylist = catchAsyncErrors(async (req, res) => {
   const { id } = req.params;
@@ -25,7 +25,6 @@ exports.addPlaylist = catchAsyncErrors(async (req, res) => {
 exports.getFollowers = catchAsyncErrors(async (req, res) => {
   const { id } = req.params;
   const { date } = req.query;
-  const timeZone = "Europe/Berlin";
   const followers = await PlaylistFollowers.find({
     spotifyId: id,
     createdAt: {
@@ -40,6 +39,12 @@ exports.getPlaylist = catchAsyncErrors(async (req, res) => {
   const { id } = req.params;
   const playlist = await Playlist.findOne({ spotifyId: id });
   res.status(200).json({ playlist });
+});
+
+exports.deletePlaylist = catchAsyncErrors(async (req, res) => {
+  const { id } = req.params;
+  await deletePlaylist(id);
+  res.status(200).json({ message: "Playlist deleted" });
 });
 
 exports.updatePlaylist = catchAsyncErrors(async (req, res) => {
@@ -69,7 +74,7 @@ exports.searchPlaylist = catchAsyncErrors(async (req, res) => {
 });
 
 exports.getPlaylists = catchAsyncErrors(async (req, res) => {
-  const playlists = await Playlist.find();
+  const playlists = await Playlist.find().sort("-updatedAt");
   res.status(200).json({ playlists });
 });
 
@@ -109,7 +114,7 @@ const followersDaily = async (id, total, days = 27) => {
   await Promise.all(
     dates.map(async (date) => {
       const followers = await getFollowersBetweenDates(id, date, date, total);
-      let formatedDate = format(new Date(date), "yyyy-MM-dd");
+      const formatedDate = format(new Date(date), "yyyy-MM-dd");
       data.push({ date: formatedDate, followers });
     })
   );

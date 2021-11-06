@@ -59,6 +59,14 @@ agenda.define("update followers", async (job, done) => {
   }
 });
 
+// agenda.on("ready", async () => {
+//   const job = await agenda.cancel({
+//     name: "update followers",
+//     "data.spotifyId": "0hDrHpihhI705nOPB2xayh",
+//   });
+//   console.log(job);
+// });
+
 if (process.env.NODE_ENV === "production")
   agenda.on("ready", async () => await agenda.start());
 
