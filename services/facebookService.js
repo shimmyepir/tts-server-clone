@@ -41,14 +41,14 @@ exports.getDailyStats = async (campaignId) => {
     data.data.forEach((item) => {
       dailySpends.push({
         date: item.date_start,
-        spend: item.spend,
+        spend: Number(item.spend),
       });
     });
   } else {
     data.data.forEach((item) => {
       dailySpends.push({
         date: item.date_start,
-        spend: item.spend,
+        spend: Number(item.spend),
       });
     });
   }

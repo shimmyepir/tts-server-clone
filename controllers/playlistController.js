@@ -1,4 +1,4 @@
-const { startOfDay, endOfDay, sub, format } = require("date-fns");
+const { startOfDay, endOfDay } = require("date-fns");
 const Playlist = require("../models/Playlist");
 const PlaylistFollowers = require("../models/PlaylistFollowers");
 const catchAsyncErrors = require("../utils/catchAsyncErrors");
@@ -10,7 +10,9 @@ const {
   getPlaylistCampaignsData,
   getFollowersBetweenDates,
   deletePlaylist,
+  followersDaily,
 } = require("../services/playlistServices");
+const { formatDailySpendPerFollower } = require("../utils/helpers");
 
 exports.addPlaylist = catchAsyncErrors(async (req, res) => {
   const { id } = req.params;
@@ -84,24 +86,6 @@ exports.getPlaylists = catchAsyncErrors(async (req, res) => {
   res.status(200).json({ playlists });
 });
 
-const followersDaily = async (id, total, days = 27) => {
-  const endDate = endOfDay(new Date());
-  const dates = [];
-  for (let i = days; i >= 0; i--) {
-    dates.push(sub(endDate, { days: i }));
-  }
-  const data = [];
-  await Promise.all(
-    dates.map(async (date) => {
-      const followers = await getFollowersBetweenDates(id, date, date, total);
-      const formatedDate = format(new Date(date), "yyyy-MM-dd");
-      data.push({ date: formatedDate, followers });
-    })
-  );
-
-  return data.sort((a, b) => new Date(a.date) - new Date(b.date));
-};
-
 exports.followersPerDayPerPeriod = catchAsyncErrors(async (req, res) => {
   const followersPerDay = await followersDaily(req.params.id, true);
   res.status(200).json({ followersPerDay });
@@ -150,8 +134,8 @@ exports.getDailyCampaignsReport = catchAsyncErrors(async (req, res, next) => {
   const playlist = await Playlist.findOne({ spotifyId: id });
   if (playlist.campaigns.length < 1)
     return next(new AppError("No campaigns found", 400));
-  const metrics = await getDailyCampaignsData(playlist);
-  res.status(200).json({ metrics });
+  const dailySpendFollowers = await getDailyCampaignsData(playlist);
+  const dailySpendPerFollower =
+    formatDailySpendPerFollower(dailySpendFollowers);
+  res.status(200).json({ dailySpendFollowers, dailySpendPerFollower });
 });
-
-exports.followersDaily = followersDaily;

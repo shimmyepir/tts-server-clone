@@ -1,4 +1,4 @@
-const { startOfDay, endOfDay } = require("date-fns");
+const { startOfDay, endOfDay, sub, format } = require("date-fns");
 const agenda = require("../jobs/agenda");
 const Playlist = require("../models/Playlist");
 const PlaylistFollowers = require("../models/PlaylistFollowers");
@@ -95,33 +95,6 @@ const getPlaylistCampaignsData = async (playlist, startDate, endDate) => {
   return { detailedMetrics, metrics };
 };
 
-const getDailyCampaignsData = async (playlist) => {
-  const { campaigns } = playlist;
-  if (campaigns.length < 1) return [];
-  const dailySpends = {};
-  await Promise.all(
-    campaigns.map(async (campaign) => {
-      if (campaign.platform === "snapchat") {
-        dailySpends[campaign.campaign_id] = await snapchatService.getDailyStats(
-          campaign.campaign_id
-        );
-      }
-      if (campaign.platform === "tiktok") {
-        dailySpends[campaign.campaign_id] = await tiktokService.getDailyStats(
-          campaign.campaign_id,
-          campaign.advertiser_id
-        );
-      }
-      if (campaign.platform === "facebook") {
-        dailySpends[campaign.campaign_id] = await facebookService.getDailyStats(
-          campaign.campaign_id
-        );
-      }
-    })
-  );
-  return dailySpends;
-};
-
 const getFollowersBetweenDates = async (
   spotifyId,
   startDate,
@@ -148,9 +121,72 @@ const getFollowersBetweenDates = async (
   return total;
 };
 
+const lastXDays = (days) => {
+  const endDate = endOfDay(new Date());
+  const dates = [];
+  for (let i = days; i > 0; i--) {
+    dates.push(sub(endDate, { days: i }));
+  }
+  return dates;
+};
+
+const followersDaily = async (id, total, days = 27) => {
+  const dates = lastXDays(days);
+  const data = [];
+  await Promise.all(
+    dates.map(async (date) => {
+      const followers = await getFollowersBetweenDates(id, date, date, total);
+      const formatedDate = format(new Date(date), "yyyy-MM-dd");
+      data.push({ date: formatedDate, followers });
+    })
+  );
+  return data.sort((a, b) => new Date(a.date) - new Date(b.date));
+};
+
+const getDailyCampaignsData = async (playlist) => {
+  const { campaigns } = playlist;
+  if (campaigns.length < 1) return [];
+  const dailySpendsPerCampaign = {};
+  const dailySpends = {};
+  const addData = (data) => {
+    data.forEach((item) => {
+      dailySpends[item.date] = dailySpends[item.date]
+        ? Number(dailySpends[item.date]) + Number(item.spend)
+        : Number(item.spend);
+    });
+  };
+  await Promise.all(
+    campaigns.map(async (campaign) => {
+      if (campaign.platform === "snapchat") {
+        const data = await snapchatService.getDailyStats(campaign.campaign_id);
+        if (data.length) {
+          dailySpendsPerCampaign[campaign.campaign_id] = data;
+          addData(data);
+        }
+      }
+      if (campaign.platform === "tiktok") {
+        const data = await tiktokService.getDailyStats(
+          campaign.campaign_id,
+          campaign.advertiser_id
+        );
+        dailySpendsPerCampaign[campaign.campaign_id] = data;
+        addData(data);
+      }
+      if (campaign.platform === "facebook") {
+        const data = await facebookService.getDailyStats(campaign.campaign_id);
+        dailySpendsPerCampaign[campaign.campaign_id] = data;
+        addData(data);
+      }
+    })
+  );
+  const followers = await followersDaily(playlist.spotifyId, false, 27);
+  return { dailySpends, followers, dailySpendsPerCampaign };
+};
+
 module.exports = {
   getFollowersBetweenDates,
   getDailyCampaignsData,
   deletePlaylist,
   getPlaylistCampaignsData,
+  followersDaily,
 };

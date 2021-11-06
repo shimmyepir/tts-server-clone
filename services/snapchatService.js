@@ -27,7 +27,7 @@ exports.getDailyStats = async (campaignId) => {
   data.timeseries_stats[0].timeseries_stat.timeseries.forEach((item) => {
     dailySpends.push({
       date: format(new Date(item.start_time), "yyyy-MM-dd"),
-      spend: item.stats.spend,
+      spend: item.stats.spend / 1000000,
     });
   });
 
