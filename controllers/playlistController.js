@@ -57,10 +57,10 @@ exports.deletePlaylist = catchAsyncErrors(async (req, res) => {
 
 exports.updatePlaylist = catchAsyncErrors(async (req, res) => {
   const { id } = req.params;
-  const { campaignId, adPlatform, name, updateImage } = req.body;
+  const { country, isActive, name, updateImage } = req.body;
   const data = {
-    campaignId,
-    adPlatform,
+    country,
+    isActive,
     name,
   };
   if (updateImage) {
@@ -109,13 +109,13 @@ exports.addCampaign = catchAsyncErrors(async (req, res, next) => {
 });
 
 exports.removeCampaign = catchAsyncErrors(async (req, res) => {
-  const { id } = req.params;
-  const { campaignId } = req.body;
-  await Playlist.updateOne(
+  const { id, campaignId } = req.params;
+  const playlist = await Playlist.findOneAndUpdate(
     { spotifyId: id },
-    { $pull: { campaigns: { campaign_id: campaignId } } }
+    { $pull: { campaigns: { campaign_id: campaignId } } },
+    { new: true }
   );
-  res.status(204);
+  res.status(200).json({ playlist });
 });
 
 exports.getCampaignsReport = catchAsyncErrors(async (req, res, next) => {

@@ -42,6 +42,10 @@ const playlistSchema = new mongoose.Schema(
     country: {
       type: String,
     },
+    isActive: {
+      type: Boolean,
+      default: false,
+    },
     campaigns: [campaignSchema],
   },
   { timestamps: true }

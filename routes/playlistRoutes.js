@@ -24,7 +24,8 @@ router
   .delete(deletePlaylist);
 router.route("/:id/followers").get(getFollowers);
 router.get("/:id/followers-per-day", followersPerDayPerPeriod);
-router.route("/:id/campaigns").post(addCampaign).delete(removeCampaign);
+router.route("/:id/campaigns").post(addCampaign);
+router.route("/:id/campaigns/:campaignId").delete(removeCampaign);
 router.get("/:id/campaigns-report", getCampaignsReport);
 router.get("/:id/campaigns-report-daily", getDailyCampaignsReport);
 
