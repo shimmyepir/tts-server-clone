@@ -2,14 +2,10 @@ const { startOfDay, add, format, sub } = require("date-fns");
 const snapchat = require("../utils/snapchat");
 
 exports.getCampaign = async (startDate, endDate, campaignId) => {
-  const reportEndDate =
-    startDate === endDate
-      ? add(startOfDay(new Date(endDate)), { days: 1 })
-      : endDate;
   const data = await snapchat.getCampaignStats(
     campaignId,
     startOfDay(new Date(startDate)),
-    reportEndDate
+    add(startOfDay(new Date(endDate)), { days: 1 })
   );
   return data.total_stats[0].total_stat.stats;
 };
