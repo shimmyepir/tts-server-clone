@@ -3,13 +3,12 @@ const cors = require("cors");
 const morgan = require("morgan");
 const AppError = require("./utils/AppError");
 const globalErrorHandler = require("./controllers/errorController");
-const cron = require("node-cron");
 const { spotifyWebApi } = require("./utils/spotify");
-
 const playlistRoutes = require("./routes/playlistRoutes");
 const tiktokRoutes = require("./routes/tiktokRoutes");
 const snapchatRoutes = require("./routes/snapchatRoutes");
 const facebookRoutes = require("./routes/facebookRoutes");
+const { schedulePlaylistFollowersCheck } = require("./services/cronService");
 
 /*
 ////////////////////
@@ -41,7 +40,7 @@ app.get("/api/v1", (req, res) => {
 (async () => {
   try {
     const { body } = await spotifyWebApi.refreshAccessToken();
-    spotifyWebApi.setAccessToken(body["access_token"]);
+    spotifyWebApi.setAccessToken(body.access_token);
   } catch (err) {
     console.log(err);
   }
@@ -82,5 +81,9 @@ app.use("*", (req, res, next) => {
 ///////////////////
  */
 app.use(globalErrorHandler);
+
+if (process.env.NODE_ENV === "production") {
+  schedulePlaylistFollowersCheck();
+}
 
 module.exports = app;
