@@ -5,7 +5,7 @@ const Playlistfollower = require("../models/PlaylistFollowers");
 
 exports.schedulePlaylistFollowersCheck = async () => {
   console.log("scheduled database updates check");
-  cron.schedule("*/1 * * * *", async () => {
+  cron.schedule("*/9 * * * *", async () => {
     console.log("checking database for recent followers", new Date());
     const followers = await Playlistfollower.find({
       createdAt: {
