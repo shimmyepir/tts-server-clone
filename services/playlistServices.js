@@ -46,7 +46,6 @@ const getPlaylistCampaignsData = async (playlist, startDate, endDate) => {
           metrics.clicks += Number(swipes);
           metrics.impressions += Number(impressions);
           metrics.spend += Number(spend);
-          metrics.cpc += Number(cpc);
         }
       }
       if (campaign.platform === "tiktok") {
@@ -67,7 +66,6 @@ const getPlaylistCampaignsData = async (playlist, startDate, endDate) => {
           metrics.clicks += Number(clicks);
           metrics.impressions += Number(impressions);
           metrics.spend += Number(spend);
-          metrics.cpc += Number(cpc);
         }
       }
       if (campaign.platform === "facebook") {
@@ -87,11 +85,11 @@ const getPlaylistCampaignsData = async (playlist, startDate, endDate) => {
           metrics.clicks += Number(clicks);
           metrics.impressions += Number(impressions);
           metrics.spend += Number(spend);
-          metrics.cpc += Number(cpc);
         }
       }
     })
   );
+  metrics.cpc = metrics.spend / metrics.clicks;
   return { detailedMetrics, metrics };
 };
 
@@ -110,7 +108,6 @@ const getFollowersBetweenDates = async (
   }).sort("createdAt");
 
   let total;
-
   if (!followers.length) {
     total = 0;
   } else {

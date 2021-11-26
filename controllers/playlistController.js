@@ -118,13 +118,23 @@ exports.removeCampaign = catchAsyncErrors(async (req, res) => {
   res.status(200).json({ playlist });
 });
 
-exports.getCampaignsReport = catchAsyncErrors(async (req, res, next) => {
+exports.getCampaignsReport = catchAsyncErrors(async (req, res) => {
   const { id } = req.params;
   const { startDate, endDate } = req.query;
   const playlist = await Playlist.findOne({ spotifyId: id });
-  if (playlist.campaigns.length < 1)
-    return next(new AppError("No campaigns found", 400));
-  const report = await getPlaylistCampaignsData(playlist, startDate, endDate);
+  let report;
+  if (playlist.campaigns.length > 0) {
+    report = await getPlaylistCampaignsData(playlist, startDate, endDate);
+  } else {
+    report = {
+      metrics: {
+        clicks: 0,
+        cpc: 0,
+        impressions: 0,
+        spend: 0,
+      },
+    };
+  }
   const followers = await getFollowersBetweenDates(id, startDate, endDate);
   res.status(200).json({ ...report, followers });
 });

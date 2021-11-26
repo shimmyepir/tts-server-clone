@@ -1,7 +1,7 @@
+const { format } = require("date-fns");
 const Agenda = require("agenda");
 const { spotifyWebApi } = require("../utils/spotify");
 const PlaylistFollowers = require("../models/PlaylistFollowers");
-const { format } = require("date-fns");
 
 const agenda = new Agenda({
   db: {
@@ -31,7 +31,7 @@ const agenda = new Agenda({
 
 agenda.define("update followers", async (job, done) => {
   const { spotifyId, playlistId } = job.attrs.data;
-  console.log("updating followers for" + " " + spotifyId);
+  console.log(`updating followers for ${spotifyId}`);
   try {
     const { body } = await spotifyWebApi.getPlaylist(spotifyId);
     await PlaylistFollowers.create({
@@ -44,7 +44,7 @@ agenda.define("update followers", async (job, done) => {
   } catch (error) {
     if (error.statusCode && error.statusCode === 401) {
       const { body } = await spotifyWebApi.refreshAccessToken();
-      spotifyWebApi.setAccessToken(body["access_token"]);
+      spotifyWebApi.setAccessToken(body.access_token);
       const response = (await spotifyWebApi.getPlaylist(spotifyId)).body;
       await PlaylistFollowers.create({
         playlistId,
@@ -59,15 +59,7 @@ agenda.define("update followers", async (job, done) => {
   }
 });
 
-// agenda.on("ready", async () => {
-//   const job = await agenda.cancel({
-//     name: "update followers",
-//     "data.spotifyId": "0hDrHpihhI705nOPB2xayh",
-//   });
-//   console.log(job);
-// });
-
 if (process.env.NODE_ENV === "production")
-  agenda.on("ready", async () => await agenda.start());
+  agenda.on("ready", async () => agenda.start());
 
 module.exports = agenda;
