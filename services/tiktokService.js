@@ -42,8 +42,8 @@ exports.getCampaign = async (startDate, endDate, campaignId, advertiserID) => {
 };
 
 exports.getDailyStats = async (campaignId, advertiserId) => {
-  const endDate = format(sub(new Date(), { days: 1 }), "yyyy-MM-dd");
-  const startDate = format(sub(new Date(endDate), { days: 26 }), "yyyy-MM-dd");
+  const endDate = format(new Date(), "yyyy-MM-dd");
+  const startDate = format(sub(new Date(endDate), { days: 27 }), "yyyy-MM-dd");
   const { data } = await axiosClient.get("/reports/integrated/get", {
     params: {
       advertiser_id: advertiserId,

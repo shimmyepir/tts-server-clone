@@ -1,7 +1,7 @@
 exports.formatDailySpendPerFollower = (dailySpendFollowers) => {
   const { followers, dailySpends } = dailySpendFollowers;
   const dailySpendPerFollower = followers.map((item) => {
-    const spend = dailySpends[item.date];
+    const spend = dailySpends[item.date] || 0;
     return {
       ...item,
       spend,

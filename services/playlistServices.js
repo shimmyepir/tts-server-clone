@@ -121,7 +121,7 @@ const getFollowersBetweenDates = async (
 const lastXDays = (days) => {
   const endDate = endOfDay(new Date());
   const dates = [];
-  for (let i = days; i > 0; i--) {
+  for (let i = days; i >= 0; i--) {
     dates.push(sub(endDate, { days: i }));
   }
   return dates;
@@ -143,14 +143,16 @@ const followersDaily = async (id, total, days = 27) => {
 const getDailyCampaignsData = async (playlist) => {
   const { campaigns } = playlist;
   if (campaigns.length < 1) return [];
+  const dates = lastXDays(27);
   const dailySpendsPerCampaign = {};
   const dailySpends = {};
+  dates.forEach((date) => {
+    dailySpends[format(new Date(date), "yyyy-MM-dd")] = 0;
+  });
 
   const addData = (data) => {
     data.forEach((item) => {
-      dailySpends[item.date] = dailySpends[item.date]
-        ? Number(dailySpends[item.date]) + Number(item.spend)
-        : Number(item.spend);
+      dailySpends[item.date] += Number(item.spend);
     });
   };
 
