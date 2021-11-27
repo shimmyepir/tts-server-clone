@@ -37,7 +37,7 @@ exports.getCampaign = async (startDate, endDate, campaignId, advertiserID) => {
       ]),
     },
   });
-  if (!data.data.list[0]) return null;
+  if (!data.data.list || !data.data.list[0]) return null;
   return data.data.list[0].metrics;
 };
 

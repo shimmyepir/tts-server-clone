@@ -11,6 +11,7 @@ const {
   getFollowersBetweenDates,
   deletePlaylist,
   followersDaily,
+  getPlaylistSnapchatData,
 } = require("../services/playlistServices");
 const { formatDailySpendPerFollower } = require("../utils/helpers");
 
@@ -148,4 +149,11 @@ exports.getDailyCampaignsReport = catchAsyncErrors(async (req, res, next) => {
   const dailySpendPerFollower =
     formatDailySpendPerFollower(dailySpendFollowers);
   res.status(200).json({ dailySpendFollowers, dailySpendPerFollower });
+});
+
+exports.getSnapchatSpend = catchAsyncErrors(async (req, res) => {
+  const { id } = req.params;
+  const playlist = await Playlist.findOne({ spotifyId: id });
+  const data = await getPlaylistSnapchatData(playlist, 7);
+  res.status(200).json({ data });
 });

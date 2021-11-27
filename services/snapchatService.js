@@ -10,9 +10,9 @@ exports.getCampaign = async (startDate, endDate, campaignId) => {
   return data.total_stats[0].total_stat.stats;
 };
 
-exports.getDailyStats = async (campaignId) => {
-  const endDate = startOfDay(new Date());
-  const startDate = startOfDay(sub(endDate, { days: 27 }));
+exports.getDailyStats = async (campaignId, days) => {
+  const endDate = startOfDay(add(new Date(), { days: 1 }));
+  const startDate = startOfDay(sub(endDate, { days }));
   const data = await snapchat.getCampaignStats(
     campaignId,
     startDate,
@@ -21,9 +21,13 @@ exports.getDailyStats = async (campaignId) => {
   );
   const dailySpends = [];
   data.timeseries_stats[0].timeseries_stat.timeseries.forEach((item) => {
+    const spend = Number((item.stats.spend / 1000000).toFixed(2));
+    const cps = spend / item.stats.swipes ? spend / item.stats.swipes : 0;
     dailySpends.push({
       date: format(new Date(item.start_time), "yyyy-MM-dd"),
-      spend: item.stats.spend / 1000000,
+      ...item.stats,
+      spend,
+      cps: Number(cps.toFixed(2)),
     });
   });
 

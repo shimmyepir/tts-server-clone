@@ -12,6 +12,7 @@ const {
   removeCampaign,
   getCampaignsReport,
   getDailyCampaignsReport,
+  getSnapchatSpend,
 } = require("../controllers/playlistController");
 
 router.get("/", getPlaylists);
@@ -28,5 +29,6 @@ router.route("/:id/campaigns").post(addCampaign);
 router.route("/:id/campaigns/:campaignId").delete(removeCampaign);
 router.get("/:id/campaigns-report", getCampaignsReport);
 router.get("/:id/campaigns-report-daily", getDailyCampaignsReport);
+router.get("/:id/7-snapchat-spend", getSnapchatSpend);
 
 module.exports = router;
