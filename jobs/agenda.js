@@ -1,4 +1,5 @@
 const { format } = require("date-fns");
+// const { MongoClient } = require("mongodb");
 const Agenda = require("agenda");
 const { spotifyWebApi } = require("../utils/spotify");
 const PlaylistFollowers = require("../models/PlaylistFollowers");
@@ -63,3 +64,20 @@ if (process.env.NODE_ENV === "production")
   agenda.on("ready", async () => agenda.start());
 
 module.exports = agenda;
+
+// const updateTime = async () => {
+//   const client = new MongoClient(process.env.DB_URI_JOBS);
+//   await client.connect();
+//   const db = client.db("db_jobs");
+//   const collection = db.collection("agendaJobs");
+//   const data = await collection.updateMany(
+//     { name: "update followers" },
+//     {
+//       $set: { repeatInterval: "15 minutes" },
+//     }
+//   );
+
+//   console.log(data);
+// };
+
+// updateTime().then(() => console.log("done"));

@@ -1,22 +1,36 @@
 const { sub } = require("date-fns");
 const { exec } = require("child_process");
 const cron = require("node-cron");
+const Playlist = require("../models/Playlist");
 const Playlistfollower = require("../models/PlaylistFollowers");
+const PlaylistsCount = require("../models/PlaylistsCount");
 
 exports.schedulePlaylistFollowersCheck = async () => {
-  console.log("scheduled database updates check");
-  cron.schedule("*/9 * * * *", async () => {
+  console.log("scheduled playlist followers check");
+  cron.schedule("*/20 * * * *", async () => {
     console.log("checking database for recent followers", new Date());
     const followers = await Playlistfollower.find({
       createdAt: {
-        $gte: sub(new Date(), { minutes: 5 }),
+        $gte: sub(new Date(), { minutes: 20 }),
         $lte: new Date(),
       },
     });
-    console.log(followers.length);
-    if (followers.length < 1) {
+    const playlistCount = await PlaylistsCount.find()
+      .sort("-createdAt")
+      .limit(1);
+    console.log(followers.length, playlistCount[0].count);
+    if (followers.length < playlistCount[0].count * 0.9) {
       console.log("no followers found restarting server", new Date());
       exec("pm2 reload server");
     }
+  });
+};
+
+exports.schedulePlaylistsCount = async () => {
+  console.log("scheduled Playlist count update");
+  cron.schedule("*/10 * * * *", async () => {
+    const playlists = await Playlist.find();
+    console.log("updating playlist count", playlists.length, new Date());
+    await PlaylistsCount.create({ count: playlists.length });
   });
 };

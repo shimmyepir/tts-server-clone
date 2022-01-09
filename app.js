@@ -8,7 +8,10 @@ const playlistRoutes = require("./routes/playlistRoutes");
 const tiktokRoutes = require("./routes/tiktokRoutes");
 const snapchatRoutes = require("./routes/snapchatRoutes");
 const facebookRoutes = require("./routes/facebookRoutes");
-const { schedulePlaylistFollowersCheck } = require("./services/cronService");
+const {
+  schedulePlaylistFollowersCheck,
+  schedulePlaylistsCount,
+} = require("./services/cronService");
 
 /*
 ////////////////////
@@ -84,6 +87,7 @@ app.use(globalErrorHandler);
 
 if (process.env.NODE_ENV === "production") {
   schedulePlaylistFollowersCheck();
+  schedulePlaylistsCount();
 }
 
 module.exports = app;

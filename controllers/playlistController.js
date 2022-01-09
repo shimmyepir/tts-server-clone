@@ -27,7 +27,7 @@ exports.addPlaylist = catchAsyncErrors(async (req, res) => {
     playlistId: playlist._id,
     spotifyId: id,
   });
-  await updateFollowerAgenda.repeatEvery("5 minutes").save();
+  await updateFollowerAgenda.repeatEvery("15 minutes").save();
   res.status(201).json({ playlist });
 });
 
