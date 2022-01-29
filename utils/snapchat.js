@@ -1,8 +1,6 @@
 const axios = require("axios").default;
 
 class Snapchat {
-  access_token;
-  refresh_token;
   base_url = "https://adsapi.snapchat.com/v1";
   client_id = process.env.SNAPCHAT_APP_ID;
   client_secret = process.env.SNAPCHAT_SECRET;

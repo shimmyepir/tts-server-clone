@@ -187,30 +187,11 @@ const getDailyCampaignsData = async (playlist) => {
   return { dailySpends, followers, dailySpendsPerCampaign };
 };
 
-const getPlaylistSnapchatData = async (playlist, days) => {
-  const snapchatCampaigns = playlist.campaigns.filter(
-    (campaign) => campaign.platform === "snapchat"
-  );
-  const data = await Promise.all(
-    snapchatCampaigns.map(async (campaign) => {
-      const stats = await snapchatService.getDailyStats(
-        campaign.campaign_id,
-        days
-      );
-      return {
-        campaign_id: campaign.campaign_id,
-        data: stats,
-      };
-    })
-  );
-  return data;
-};
-
 module.exports = {
   getFollowersBetweenDates,
   getDailyCampaignsData,
   deletePlaylist,
   getPlaylistCampaignsData,
   followersDaily,
-  getPlaylistSnapchatData,
+  lastXDays,
 };

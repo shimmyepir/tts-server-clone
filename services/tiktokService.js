@@ -41,9 +41,9 @@ exports.getCampaign = async (startDate, endDate, campaignId, advertiserID) => {
   return data.data.list[0].metrics;
 };
 
-exports.getDailyStats = async (campaignId, advertiserId) => {
+exports.getDailyStats = async (campaignId, days, advertiserId) => {
   const endDate = format(new Date(), "yyyy-MM-dd");
-  const startDate = format(sub(new Date(endDate), { days: 27 }), "yyyy-MM-dd");
+  const startDate = format(sub(new Date(endDate), { days }), "yyyy-MM-dd");
   const { data } = await axiosClient.get("/reports/integrated/get", {
     params: {
       advertiser_id: advertiserId,
@@ -72,16 +72,22 @@ exports.getDailyStats = async (campaignId, advertiserId) => {
       ]),
     },
   });
-  if (!data.data.list) return null;
-  const spends = [];
+  if (!Object.keys(data.data).length) throw data.message;
+  if (!data.data.list) return [];
+  const dailySpends = [];
   data.data.list.forEach((item) => {
-    spends.push({
+    if (!item.metrics) return;
+    const { spend, cpc, clicks, impressions } = item.metrics;
+    dailySpends.push({
       date: format(new Date(item.dimensions.stat_time_day), "yyyy-MM-dd"),
-      spend: Number(item.metrics.spend),
+      spend: Number(spend),
+      cpc: Number(cpc),
+      clicks: Number(clicks),
+      impressions: Number(impressions),
     });
   });
-  const dailySpends = spends.sort(
-    (a, b) => new Date(a.date) - new Date(b.date)
-  );
+  // const dailySpends = spends.sort(
+  //   (a, b) => new Date(a.date) - new Date(b.date)
+  // );
   return dailySpends;
 };

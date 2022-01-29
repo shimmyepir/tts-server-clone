@@ -21,13 +21,15 @@ exports.getDailyStats = async (campaignId, days) => {
   );
   const dailySpends = [];
   data.timeseries_stats[0].timeseries_stat.timeseries.forEach((item) => {
+    const { swipes, impressions } = item.stats;
     const spend = Number((item.stats.spend / 1000000).toFixed(2));
-    const cps = spend / item.stats.swipes ? spend / item.stats.swipes : 0;
+    const cpc = spend ? spend / swipes : 0;
     dailySpends.push({
       date: format(new Date(item.start_time), "yyyy-MM-dd"),
-      ...item.stats,
       spend,
-      cps: Number(cps.toFixed(2)),
+      clicks: swipes,
+      impressions,
+      cpc: Number(cpc.toFixed(2)),
     });
   });
 

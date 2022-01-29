@@ -1,19 +1,20 @@
 const { startOfDay, endOfDay } = require("date-fns");
 const Playlist = require("../models/Playlist");
 const PlaylistFollowers = require("../models/PlaylistFollowers");
+const AdDataService = require("../services/adsDataService");
+const CampaignsService = require("../services/campaingsService");
 const catchAsyncErrors = require("../utils/catchAsyncErrors");
 const { spotifyWebApi } = require("../utils/spotify");
 const agenda = require("../jobs/agenda");
 const AppError = require("../utils/AppError");
 const {
-  getDailyCampaignsData,
-  getPlaylistCampaignsData,
   getFollowersBetweenDates,
   deletePlaylist,
   followersDaily,
-  getPlaylistSnapchatData,
 } = require("../services/playlistServices");
 const { formatDailySpendPerFollower } = require("../utils/helpers");
+const AdData = require("../models/AdData");
+const CampaignRefreshReport = require("../models/CampaignRefreshReport");
 
 exports.addPlaylist = catchAsyncErrors(async (req, res) => {
   const { id } = req.params;
@@ -98,7 +99,15 @@ exports.addCampaign = catchAsyncErrors(async (req, res, next) => {
   if (platform === "tiktok" && !advertiserId) {
     return next(new AppError("Advertiser Id is required for tiktok", 400));
   }
+
   const playlist = await Playlist.findOne({ spotifyId: id });
+  const existingPlaylist = playlist.campaigns.find(
+    (campaign) => campaign.campaign_id === campaignId
+  );
+
+  if (existingPlaylist)
+    return next(new AppError("This campaign has been added already", 400));
+
   playlist.campaigns.push({
     campaign_id: campaignId,
     platform,
@@ -106,6 +115,12 @@ exports.addCampaign = catchAsyncErrors(async (req, res, next) => {
     advertiser_id: advertiserId,
   });
   await playlist.save();
+  await AdDataService.addNewCampaignAdData(
+    campaignId,
+    platform,
+    id,
+    advertiserId
+  );
   res.status(200).json({ playlist });
 });
 
@@ -116,6 +131,7 @@ exports.removeCampaign = catchAsyncErrors(async (req, res) => {
     { $pull: { campaigns: { campaign_id: campaignId } } },
     { new: true }
   );
+  await AdData.deleteMany({ spotify_id: id, campaign_id: campaignId });
   res.status(200).json({ playlist });
 });
 
@@ -123,9 +139,17 @@ exports.getCampaignsReport = catchAsyncErrors(async (req, res) => {
   const { id } = req.params;
   const { startDate, endDate } = req.query;
   const playlist = await Playlist.findOne({ spotifyId: id });
+  if (!playlist) return;
   let report;
   if (playlist.campaigns.length > 0) {
-    report = await getPlaylistCampaignsData(playlist, startDate, endDate);
+    const metrics = await AdDataService.getPlaylistAdDataBetweenDates(
+      playlist.spotifyId,
+      startDate,
+      endDate
+    );
+    report = {
+      metrics,
+    };
   } else {
     report = {
       metrics: {
@@ -145,7 +169,9 @@ exports.getDailyCampaignsReport = catchAsyncErrors(async (req, res, next) => {
   const playlist = await Playlist.findOne({ spotifyId: id });
   if (playlist.campaigns.length < 1)
     return next(new AppError("No campaigns found", 400));
-  const dailySpendFollowers = await getDailyCampaignsData(playlist);
+  const dailySpendFollowers = await AdDataService.getDailySpendsAndFollowers(
+    playlist
+  );
   const dailySpendPerFollower =
     formatDailySpendPerFollower(dailySpendFollowers);
   res.status(200).json({ dailySpendFollowers, dailySpendPerFollower });
@@ -154,6 +180,102 @@ exports.getDailyCampaignsReport = catchAsyncErrors(async (req, res, next) => {
 exports.getSnapchatSpend = catchAsyncErrors(async (req, res) => {
   const { id } = req.params;
   const playlist = await Playlist.findOne({ spotifyId: id });
-  const data = await getPlaylistSnapchatData(playlist, 7);
+  const snapchatCampaigns = playlist.campaigns.filter(
+    (campaign) => campaign.platform === "snapchat"
+  );
+  const data = await Promise.all(
+    snapchatCampaigns.map(async (campaign) => {
+      const stats = await AdDataService.getDailyAdData(campaign.campaign_id, 7);
+      return {
+        campaign_id: campaign.campaign_id,
+        data: stats,
+      };
+    })
+  );
   res.status(200).json({ data });
 });
+
+exports.getLatestCampaignsReport = catchAsyncErrors(async (req, res) => {
+  const report = await CampaignRefreshReport.findOne({})
+    .sort("-createdAt")
+    .limit(1);
+  res.status(200).json({ report });
+});
+
+exports.refreshCampaignsAdData = catchAsyncErrors(async (req, res) => {
+  const { days, platform } = req.body;
+
+  const adsByPlatform = await CampaignsService.groupCampaignsByPlatform();
+  await AdDataService.updateManyCampaignsDataForLastDays(
+    adsByPlatform,
+    days,
+    platform
+  );
+  res.status(200).json({ status: "success" });
+});
+
+exports.playGround = async (req, res) => {
+  //   const playlists = await Playlist.find();
+  //   let data;
+  //   playlists.forEach((playlist) => {
+  //     const { campaigns } = playlist;
+  //     const foundCampaings = {};
+  //     if (campaigns.length > 1) {
+  //       campaigns.forEach((campaign) => {
+  //         foundCampaings[campaign.campaign_id] = foundCampaings[
+  //           campaign.campaign_id
+  //         ]
+  //           ? foundCampaings[campaign.campaign_id] + 1
+  //           : 1;
+  //       });
+  //       console.log(foundCampaings);
+  //       data = Object.entries(foundCampaings).map(([key, value]) => {
+  //         if (value > 1) return { [key]: value };
+  //       });
+  //     }
+  //   });
+  // const data = await Playlist.aggregate([
+  //   {
+  //     $unwind: "$campaigns",
+  //   },
+  //   {
+  //     $group: {
+  //       _id: "$campaigns.campaign_id",
+  //       total: { $sum: 1 },
+  //       docs: { $push: "$$ROOT" },
+  //     },
+  //   },
+  //   {
+  //     $match: {
+  //       total: { $gt: 1 },
+  //     },
+  //   },
+  // ]);
+  const spotifyId = "4mjaFrK3uO4umLqpZrwTFC";
+  const data = await AdData.aggregate([
+    {
+      $match: {
+        spotify_id: spotifyId,
+        date: {
+          $gte: startOfDay(new Date("2022-01-01")),
+          $lte: endOfDay(new Date("2022-01-27")),
+        },
+      },
+    },
+    {
+      $group: {
+        _id: "$campaign_id",
+        spend: { $sum: "$spend" },
+      },
+    },
+  ]);
+  const playlist = await Playlist.findOne({ spotifyId });
+  const campaignsNotFound = [];
+  playlist.campaigns.forEach((campaign) => {
+    if (!data.find((item) => item._id === campaign.campaign_id)) {
+      campaignsNotFound.push(campaign);
+    }
+  });
+
+  res.status(200).send({ legnth: data.length, campaignsNotFound, data });
+};

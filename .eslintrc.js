@@ -19,6 +19,7 @@ module.exports = {
     "no-param-reassign": "off",
     "no-plusplus": "off",
     "object-curly-newline": "off",
+    camelcase: "off",
     indent: "off",
     "comma-dangle": [
       "error",

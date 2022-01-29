@@ -1,22 +1,25 @@
 const mongoose = require("mongoose");
 
-const campaignSchema = new mongoose.Schema({
-  campaign_id: {
-    type: String,
-    required: true,
-    unique: true,
+const campaignSchema = new mongoose.Schema(
+  {
+    campaign_id: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+    platform: {
+      type: String,
+      required: true,
+    },
+    user: {
+      type: String,
+    },
+    advertiser_id: {
+      type: String,
+    },
   },
-  platform: {
-    type: String,
-    required: true,
-  },
-  user: {
-    type: String,
-  },
-  advertiser_id: {
-    type: String,
-  },
-});
+  { toJSON: { virtuals: true } }
+);
 
 const playlistSchema = new mongoose.Schema(
   {
@@ -48,7 +51,7 @@ const playlistSchema = new mongoose.Schema(
     },
     campaigns: [campaignSchema],
   },
-  { timestamps: true }
+  { timestamps: true, toJSON: { virtuals: true } }
 );
 
 playlistSchema.index({ name: "text" });
