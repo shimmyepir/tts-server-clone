@@ -22,6 +22,7 @@ class AdDataService {
     if (!data || !data.length) return;
     return data.map(async (item) => {
       const { spend, impressions, date, cpc, clicks } = item;
+
       const adData = await AdData.findOne({
         formated_date: date,
         campaign_id,
@@ -30,16 +31,23 @@ class AdDataService {
       });
 
       if (adData) {
-        // console.log("updating");
-        adData.update({
-          spend,
-          clicks,
-          impressions,
-          cpc,
-        });
+        // // console.log("updating");
+        // if (adData.spotify_id !== spotify_id)
+        //   console.log("Beware, this is not a duplicate");
+        // // adData.update();
+        await AdData.findByIdAndUpdate(
+          adData.id,
+          {
+            spend,
+            clicks,
+            impressions,
+            cpc,
+          },
+          { new: true }
+        );
       } else {
         // console.log("creating");
-        AdData.create({
+        await AdData.create({
           campaign_id,
           platform,
           spend,

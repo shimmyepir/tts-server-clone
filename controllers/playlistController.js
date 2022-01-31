@@ -251,20 +251,29 @@ exports.playGround = async (req, res) => {
   //     },
   //   },
   // ]);
-  const spotifyId = "4mjaFrK3uO4umLqpZrwTFC";
+  const spotifyId = "332jKl2I2qZMbQSDciJD7i";
   const data = await AdData.aggregate([
     {
       $match: {
         spotify_id: spotifyId,
+        platform: "facebook",
         date: {
-          $gte: startOfDay(new Date("2022-01-01")),
-          $lte: endOfDay(new Date("2022-01-27")),
+          $gte: startOfDay(new Date("2022-01-16")),
+          $lte: endOfDay(new Date("2022-01-30")),
         },
       },
     },
     {
       $group: {
         _id: "$campaign_id",
+        // campaign: { $push: "$$ROOT" },
+        spend: { $sum: "$spend" },
+      },
+    },
+    {
+      $group: {
+        _id: null,
+        // campaign: { $push: "$$ROOT" },
         spend: { $sum: "$spend" },
       },
     },
@@ -273,9 +282,18 @@ exports.playGround = async (req, res) => {
   const campaignsNotFound = [];
   playlist.campaigns.forEach((campaign) => {
     if (!data.find((item) => item._id === campaign.campaign_id)) {
-      campaignsNotFound.push(campaign);
+      campaignsNotFound.push({
+        ...campaign.toObject(),
+        spotify_id: playlist.spotifyId,
+      });
     }
   });
-
-  res.status(200).send({ legnth: data.length, campaignsNotFound, data });
+  // await AdDataService.addNewCampaignAdData(
+  //   "6292885114974",
+  //   "facebook",
+  //   spotifyId
+  // );
+  res.status(200).send({ data, campaignsNotFound });
 };
+
+// 6292888630774
