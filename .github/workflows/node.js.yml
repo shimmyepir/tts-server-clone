@@ -29,8 +29,8 @@ jobs:
           ENV_NODE_ENV: ${{ secrets.NODE_ENV }}
           ENV_PORT: ${{ secrets.PORT }}
           ENV_JWT_SECRET: ${{ secrets.JWT_SECRET }}
-          ENV_DB_URI: ${{ secrets.DB_URI}}
-          ENV_DB_URI_JOBS: ${{ secrets.DB_URI_JOBS }}
+          ENV_PROD_DB_URI: ${{ secrets.PROD_DB_URI}}
+          ENV_PROD_DB_URI_JOBS: ${{ secrets.PROD_DB_URI_JOBS }}
           ENV_SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
           ENV_SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
           ENV_SPOTIFY_ACCESS_TOKEN: ${{ secrets.SPOTIFY_ACCESS_TOKEN }}
