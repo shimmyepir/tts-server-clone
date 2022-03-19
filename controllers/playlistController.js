@@ -251,15 +251,15 @@ exports.playGround = async (req, res) => {
   //     },
   //   },
   // ]);
-  const spotifyId = "332jKl2I2qZMbQSDciJD7i";
+  const spotifyId = "2le9jQiB9OYEmXaILbBKsE";
   const data = await AdData.aggregate([
     {
       $match: {
         spotify_id: spotifyId,
         platform: "facebook",
         date: {
-          $gte: startOfDay(new Date("2022-01-16")),
-          $lte: endOfDay(new Date("2022-01-30")),
+          $gte: startOfDay(new Date("2022-01-31")),
+          $lte: endOfDay(new Date("2022-01-31")),
         },
       },
     },

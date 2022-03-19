@@ -215,11 +215,12 @@ class AdDataService {
           _id: null,
           spend: { $sum: "$spend" },
           impressions: { $sum: "$impressions" },
-          cpc: { $sum: "$cpc" },
+          cpc: { $avg: "$cpc" },
           clicks: { $sum: "$clicks" },
         },
       },
     ]);
+   console.log(data)
     if (!data[0])
       return {
         spend: 0,
