@@ -6,7 +6,7 @@ const PlaylistFollowers = require("../models/PlaylistFollowers");
 
 const agenda = new Agenda({
   db: {
-    address: process.env.PROD_DB_URI_JOBS,
+    address: process.env.DB_URI_JOBS,
     options: {
       useNewUrlParser: true,
       useUnifiedTopology: true,

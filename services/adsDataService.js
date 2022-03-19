@@ -220,7 +220,7 @@ class AdDataService {
         },
       },
     ]);
-   console.log(data)
+
     if (!data[0])
       return {
         spend: 0,
