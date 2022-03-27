@@ -214,6 +214,28 @@ exports.refreshCampaignsAdData = catchAsyncErrors(async (req, res) => {
   res.status(200).json({ status: "success" });
 });
 
+exports.campaignsDailyStats = catchAsyncErrors(async (req, res, next) => {
+  const { id } = req.params;
+  const playlist = await Playlist.findOne({ spotifyId: id });
+  if (!playlist || (playlist && playlist.campaigns.length < 2))
+    return next(new AppError("No campaigns found", 400));
+  const data = await Promise.all(
+    playlist.campaigns.map(async (campaign) => {
+      const stats = await AdDataService.getDailyAdData(
+        campaign.campaign_id,
+        27
+      );
+      return {
+        campaign_id: campaign.campaign_id,
+        platform: campaign.platform,
+        data: stats,
+        totalSpend: stats.reduce((acc, curr) => acc + curr.spend, 0),
+      };
+    })
+  );
+  res.status(200).json({ data });
+});
+
 exports.playGround = async (req, res) => {
   //   const playlists = await Playlist.find();
   //   let data;

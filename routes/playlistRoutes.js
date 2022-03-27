@@ -17,6 +17,7 @@ const {
   getLatestCampaignsReport,
   refreshCampaignsAdData,
   playGround,
+  campaignsDailyStats,
 } = require("../controllers/playlistController");
 
 router.get("/", getPlaylists);
@@ -37,5 +38,6 @@ router.route("/:id/campaigns/:campaignId").delete(removeCampaign);
 router.get("/:id/campaigns-report", getCampaignsReport);
 router.get("/:id/campaigns-report-daily", getDailyCampaignsReport);
 router.get("/:id/7-day-snapchat-spend", getSnapchatSpend);
+router.get("/:id/campaigns-daily-stats", campaignsDailyStats);
 
 module.exports = router;
