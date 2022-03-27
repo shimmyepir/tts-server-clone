@@ -6,7 +6,7 @@ const PlaylistFollowers = require("../models/PlaylistFollowers");
 
 const agenda = new Agenda({
   db: {
-    address: process.env.DB_URI_JOBS,
+    address: process.env.PROD_DB_URI_JOBS,
     options: {
       useNewUrlParser: true,
       useUnifiedTopology: true,
@@ -66,18 +66,17 @@ if (process.env.NODE_ENV === "production")
 module.exports = agenda;
 
 // const updateTime = async () => {
-//   const client = new MongoClient(process.env.DB_URI_JOBS);
-//   await client.connect();
-//   const db = client.db("db_jobs");
-//   const collection = db.collection("agendaJobs");
-//   const data = await collection.updateMany(
-//     { name: "update followers" },
-//     {
-//       $set: { repeatInterval: "15 minutes" },
-//     }
-//   );
+//   // const client = new MongoClient(process.env.DB_URI_JOBS);
+//   // await client.connect();
+//   // const db = client.db("db_jobs");
+//   // const collection = db.collection("agendaJobs");
+//   // const data = await collection.updateMany(
+//   //   { name: "update followers" },
+//   //   {
+//   //     $set: { repeatInterval: "15 minutes" },å
+//   //   }
+//   // );
 
-//   console.log(data);
 // };
 
 // updateTime().then(() => console.log("done"));
