@@ -26,8 +26,9 @@ exports.getDailyStats = async (campaignId, days) => {
     params: {
       access_token: process.env.FACEBOOK_ACCESS_TOKEN_LONG,
       fields: "clicks,cpc,impressions,objective,spend",
+      breakdowns: "country",
       time_increment: 1,
-      limit: 30,
+      limit: 500,
       time_range: {
         since: startDate,
         until: endDate,
@@ -36,13 +37,14 @@ exports.getDailyStats = async (campaignId, days) => {
   });
   const dailySpends = [];
   data.data.forEach((item) => {
-    const { date_start, impressions, spend, clicks, cpc } = item;
+    const { date_start, impressions, spend, clicks, cpc, country } = item;
     dailySpends.push({
       date: date_start,
       cpc: cpc ? Number(cpc) : 0,
       impressions: Number(impressions),
       clicks: Number(clicks),
-      spend: Number(spend),
+      spend: Number(spend) || 0,
+      country,
     });
   });
   return dailySpends;

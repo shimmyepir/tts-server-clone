@@ -37,7 +37,7 @@ ROUTES
 ///////////////////
  */
 app.get("/api/v1", (req, res) => {
-  res.status(200).send("welcome to loud.army REST API");
+  res.status(200).send("welcome to TTS REST API");
 });
 
 (async () => {

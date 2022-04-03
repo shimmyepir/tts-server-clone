@@ -35,6 +35,7 @@ class Snapchat {
             end_time: endDate,
             start_time: startDate,
             granularity,
+            report_dimension: "country",
           },
         }
       );

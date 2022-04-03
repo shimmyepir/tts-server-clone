@@ -37,6 +37,7 @@ const adDataSchema = new mongoose.Schema(
     formated_date: {
       type: String,
     },
+    country: String,
   },
   { timestamps: true }
 );

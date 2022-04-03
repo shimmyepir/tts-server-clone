@@ -21,17 +21,18 @@ class AdDataService {
   static async saveAdDataToDb(data, spotify_id, platform, campaign_id) {
     if (!data || !data.length) return;
     return data.map(async (item) => {
-      const { spend, impressions, date, cpc, clicks } = item;
-
+      const { spend, impressions, date, cpc, clicks, country } = item;
+      // console.log(item);
       const adData = await AdData.findOne({
         formated_date: date,
         campaign_id,
         platform,
         spotify_id,
+        country,
       });
 
       if (adData) {
-        // // console.log("updating");
+        console.log("updating");
         // if (adData.spotify_id !== spotify_id)
         //   console.log("Beware, this is not a duplicate");
         // // adData.update();
@@ -57,6 +58,7 @@ class AdDataService {
           spotify_id,
           formated_date: date,
           date: getDate(date),
+          country,
         });
       }
     });
@@ -67,6 +69,10 @@ class AdDataService {
     days,
     platformsToRefresh
   ) {
+    // await AdData.deleteMany({
+    //   platform: "snapchat",
+    //   date: { $gt: new Date(2022, 2, 25) },
+    // });
     const report = {
       date: new Date(),
       totalCampaings: [
@@ -212,11 +218,32 @@ class AdDataService {
       },
       {
         $group: {
-          _id: null,
+          _id: {
+            all: null,
+            country: "$country",
+          },
           spend: { $sum: "$spend" },
           impressions: { $sum: "$impressions" },
           cpc: { $avg: "$cpc" },
           clicks: { $sum: "$clicks" },
+        },
+      },
+      {
+        $group: {
+          _id: "$_id.all",
+          spend: { $sum: "$spend" },
+          impressions: { $sum: "$impressions" },
+          cpc: { $avg: "$cpc" },
+          clicks: { $sum: "$clicks" },
+          countries: {
+            $push: {
+              country: "$_id.country",
+              spend: "$spend",
+              impressions: "$impressions",
+              cpc: "$cpc",
+              clicks: "$clicks",
+            },
+          },
         },
       },
     ]);
@@ -227,6 +254,7 @@ class AdDataService {
         impressions: 0,
         cpc: 0,
         clicks: 0,
+        countries: [],
       };
     return data[0];
   }

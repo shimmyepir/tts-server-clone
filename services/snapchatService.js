@@ -21,16 +21,21 @@ exports.getDailyStats = async (campaignId, days) => {
   );
   const dailySpends = [];
   data.timeseries_stats[0].timeseries_stat.timeseries.forEach((item) => {
-    const { swipes, impressions } = item.stats;
-    const spend = Number((item.stats.spend / 1000000).toFixed(2));
-    const cpc = spend ? spend / swipes : 0;
-    dailySpends.push({
-      date: format(new Date(item.start_time), "yyyy-MM-dd"),
-      spend,
-      clicks: swipes,
-      impressions,
-      cpc: Number(cpc.toFixed(2)),
-    });
+    if (item.dimension_stats && item.dimension_stats.length) {
+      item.dimension_stats.forEach((stat) => {
+        const { swipes, impressions, country } = stat;
+        const spend = Number((stat.spend / 1000000).toFixed(2));
+        const cpc = spend ? spend / swipes : 0;
+        dailySpends.push({
+          date: format(new Date(item.start_time), "yyyy-MM-dd"),
+          spend,
+          clicks: swipes,
+          impressions,
+          cpc: Number(cpc.toFixed(2)),
+          country: country.toUpperCase(),
+        });
+      });
+    }
   });
 
   return dailySpends;
