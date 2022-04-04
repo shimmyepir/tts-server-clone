@@ -69,10 +69,6 @@ class AdDataService {
     days,
     platformsToRefresh
   ) {
-    // await AdData.deleteMany({
-    //   platform: "snapchat",
-    //   date: { $gt: new Date(2022, 2, 25) },
-    // });
     const report = {
       date: new Date(),
       totalCampaings: [
@@ -256,6 +252,7 @@ class AdDataService {
         clicks: 0,
         countries: [],
       };
+    delete data[0]._id;
     return data[0];
   }
 
@@ -263,10 +260,17 @@ class AdDataService {
     const { campaigns } = playlist;
     const dates = lastXDays(27);
     const dailySpends = {};
+    let followers = [];
     dates.forEach((date) => {
-      dailySpends[format(new Date(date), "yyyy-MM-dd")] = 0;
+      date = format(new Date(date), "yyyy-MM-dd");
+      dailySpends[date] = 0;
+      followers.push({
+        date,
+        followers: 0,
+      });
     });
-    if (campaigns.length < 1) return [];
+
+    if (campaigns.length < 1) return { dailySpends, followers };
 
     const data = await AdData.aggregate([
       {
@@ -292,8 +296,7 @@ class AdDataService {
       const { date, spend } = item;
       dailySpends[date] = Number(spend.toFixed(2));
     });
-
-    const followers = await followersDaily(playlist.spotifyId, false, 27);
+    followers = await followersDaily(playlist.spotifyId, false, 27);
     return { dailySpends, followers };
   }
 

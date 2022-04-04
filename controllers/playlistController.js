@@ -237,6 +237,107 @@ exports.campaignsDailyStats = catchAsyncErrors(async (req, res, next) => {
   res.status(200).json({ data });
 });
 
+exports.artistReport = catchAsyncErrors(async (req, res, next) => {
+  const { artist, startDate, endDate } = req.query;
+  if (!artist || !startDate || !endDate)
+    return next(new AppError("artist, startDate and endDate required", 400));
+  const playlists = await Playlist.find({
+    name: { $regex: new RegExp(artist, "i") },
+  });
+  let artistCampaignsData = [];
+  if (playlists.length) {
+    artistCampaignsData = await Promise.all(
+      playlists.map(async (playlist) => {
+        const metrics = await AdDataService.getPlaylistAdDataBetweenDates(
+          playlist.spotifyId,
+          startDate,
+          endDate
+        );
+        const dailySpendFollowers =
+          await AdDataService.getDailySpendsAndFollowers(playlist);
+        const dailySpendPerFollower =
+          formatDailySpendPerFollower(dailySpendFollowers);
+        return {
+          playlist: playlist.name,
+          metrics,
+          dailySpendPerFollower,
+        };
+      })
+    );
+  }
+
+  const totalCampaings = playlists.reduce(
+    (acc, playlist) => acc + playlist.campaigns.length,
+    0
+  );
+
+  let summary = {
+    clicks: 0,
+    cpc: 0,
+    impressions: 0,
+    spend: 0,
+    totalPlaylists: playlists.length,
+    totalCampaings,
+    countries: [],
+    dailySpendPerFollower: [],
+  };
+  if (artistCampaignsData.length) {
+    artistCampaignsData.forEach((item) => {
+      summary.clicks = summary.clicks + item.metrics.clicks;
+      summary.cpc = summary.cpc + item.metrics.cpc;
+      summary.impressions = summary.impressions + item.metrics.impressions;
+      summary.spend = summary.spend + item.metrics.spend;
+      summary.countries = [...summary.countries, ...item.metrics.countries];
+
+      item.dailySpendPerFollower.forEach((dailySpend) => {
+        const index = summary.dailySpendPerFollower.findIndex(
+          (spend) => spend.date === dailySpend.date
+        );
+        if (index === -1) {
+          summary.dailySpendPerFollower.push({
+            date: dailySpend.date,
+            spend: dailySpend.spend,
+            followers: dailySpend.followers,
+            spendPerFollower: dailySpend.spendPerFollower,
+          });
+        } else {
+          const newSpend =
+            summary.dailySpendPerFollower[index].spend + dailySpend.spend;
+          const newFollowers =
+            summary.dailySpendPerFollower[index].followers +
+            dailySpend.followers;
+          summary.dailySpendPerFollower[index].spend = newSpend
+            ? Number(newSpend.toFixed(2))
+            : 0;
+          summary.dailySpendPerFollower[index].followers = newFollowers
+            ? Number(newFollowers.toFixed(2))
+            : 0;
+
+          summary.dailySpendPerFollower[index].spendPerFollower =
+            !newSpend || !newFollowers
+              ? 0
+              : Number((newSpend / newFollowers).toFixed(2));
+        }
+      });
+    });
+  }
+
+  if (summary.countries.length) {
+    summary.countries = summary.countries.reduce((acc, curr) => {
+      const country = curr.country || "others";
+      acc[country] = {
+        clicks: (acc[country]?.clicks || 0) + curr.clicks,
+        cpc: (acc[country]?.cpc || 0) + curr.cpc,
+        impressions: (acc[country]?.impressions || 0) + curr.impressions,
+        spend: (acc[country]?.spend || 0) + curr.spend,
+      };
+      return acc;
+    }, {});
+  }
+
+  res.status(200).json({ summary, artistCampaignsData });
+});
+
 exports.playGround = async (req, res) => {
   //   const playlists = await Playlist.find();
   //   let data;

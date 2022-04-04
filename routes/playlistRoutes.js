@@ -18,12 +18,14 @@ const {
   refreshCampaignsAdData,
   playGround,
   campaignsDailyStats,
+  artistReport,
 } = require("../controllers/playlistController");
 
 router.get("/", getPlaylists);
 router.get("/search", searchPlaylist);
 router.get("/latest-campaign-report", getLatestCampaignsReport);
 router.get("/tests", playGround);
+router.get("/artist-report", artistReport);
 router.post("/refresh-campaigns", refreshCampaignsAdData);
 router
   .route("/:id")

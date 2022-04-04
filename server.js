@@ -20,5 +20,6 @@ mongoose
   })
   .then(async () => {
     console.log(NODE_ENV + " DB connected");
+    if (DB === PROD_DB_URI) console.log("YOU ARE IN PRODUCTION MODE");
   })
   .catch((err) => console.log(err));
