@@ -244,27 +244,33 @@ exports.artistReport = catchAsyncErrors(async (req, res, next) => {
   const playlists = await Playlist.find({
     name: { $regex: new RegExp(artist, "i") },
   });
-  let artistCampaignsData = [];
-  if (playlists.length) {
-    artistCampaignsData = await Promise.all(
-      playlists.map(async (playlist) => {
-        const metrics = await AdDataService.getPlaylistAdDataBetweenDates(
-          playlist.spotifyId,
-          startDate,
-          endDate
-        );
-        const dailySpendFollowers =
-          await AdDataService.getDailySpendsAndFollowers(playlist);
-        const dailySpendPerFollower =
-          formatDailySpendPerFollower(dailySpendFollowers);
-        return {
-          playlist: playlist.name,
-          metrics,
-          dailySpendPerFollower,
-        };
-      })
-    );
-  }
+  if (!playlists.length)
+    return next(new AppError("No playlists found for this artist", 400));
+
+  const artistCampaignsData = await Promise.all(
+    playlists.map(async (playlist) => {
+      const metrics = await AdDataService.getPlaylistAdDataBetweenDates(
+        playlist.spotifyId,
+        startDate,
+        endDate
+      );
+      const followers = await getFollowersBetweenDates(
+        playlist.spotifyId,
+        startDate,
+        endDate
+      );
+      const dailySpendFollowers =
+        await AdDataService.getDailySpendsAndFollowers(playlist);
+      const dailySpendPerFollower =
+        formatDailySpendPerFollower(dailySpendFollowers);
+      return {
+        playlist: playlist.name,
+        metrics,
+        dailySpendPerFollower,
+        followers,
+      };
+    })
+  );
 
   const totalCampaings = playlists.reduce(
     (acc, playlist) => acc + playlist.campaigns.length,
@@ -276,6 +282,7 @@ exports.artistReport = catchAsyncErrors(async (req, res, next) => {
     cpc: 0,
     impressions: 0,
     spend: 0,
+    followers: 0,
     totalPlaylists: playlists.length,
     totalCampaings,
     countries: [],
@@ -286,6 +293,7 @@ exports.artistReport = catchAsyncErrors(async (req, res, next) => {
       summary.clicks = summary.clicks + item.metrics.clicks;
       summary.cpc = summary.cpc + item.metrics.cpc;
       summary.impressions = summary.impressions + item.metrics.impressions;
+      summary.followers = summary.followers + item.followers;
       summary.spend = summary.spend + item.metrics.spend;
       summary.countries = [...summary.countries, ...item.metrics.countries];
 
