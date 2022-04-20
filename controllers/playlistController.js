@@ -11,11 +11,18 @@ const {
   getFollowersBetweenDates,
   deletePlaylist,
   followersDaily,
+  searchPlaylistsByName,
 } = require("../services/playlistServices");
-const { formatDailySpendPerFollower } = require("../utils/helpers");
+const {
+  formatDailySpendPerFollower,
+  getKeyByValue,
+} = require("../utils/helpers");
 const AdData = require("../models/AdData");
 const CampaignRefreshReport = require("../models/CampaignRefreshReport");
 const { getDailyStats } = require("../services/snapchatService");
+const { exec, spawn } = require("child_process");
+const { streams } = require("../utils/streams");
+const countryCodes = require("../utils/countries");
 
 exports.addPlaylist = catchAsyncErrors(async (req, res) => {
   const { id } = req.params;
@@ -241,9 +248,7 @@ exports.artistReport = catchAsyncErrors(async (req, res, next) => {
   const { artist, startDate, endDate } = req.query;
   if (!artist || !startDate || !endDate)
     return next(new AppError("artist, startDate and endDate required", 400));
-  const playlists = await Playlist.find({
-    name: { $regex: new RegExp(artist, "i") },
-  });
+  const playlists = await searchPlaylistsByName(artist);
   if (!playlists.length)
     return next(new AppError("No playlists found for this artist", 400));
 
@@ -347,6 +352,36 @@ exports.artistReport = catchAsyncErrors(async (req, res, next) => {
 });
 
 exports.playGround = async (req, res) => {
+  // exec("npm run cypress", (err, stdout, stderr) => {
+  //   if (err) {
+  //     console.error(err);
+  //     return;
+  //   }
+  //   });
+
+  // const child = spawn("npm", ["run", "cypress"]);
+
+  // child.stdout.on("data", (data) => {
+  //   console.log(`stdout:\n${data}`);
+  // });
+
+  // child.stderr.on("data", (data) => {
+  //   console.error(`stderr: ${data}`);
+  // });
+
+  // child.on("error", (error) => {
+  //   console.error(`error: ${error.message}`);
+  // });
+  const formattedStreams = {};
+  Object.keys(streams).forEach((key) => {
+    const countryCode = getKeyByValue(countryCodes, key)
+    if (!countryCode) console.log(key);
+    formattedStreams[countryCode] = streams[key];
+  });
+
+  // child.on("close", (code) => {
+  //   console.log(`child process exited with code ${code}`);
+  // });
   //   const playlists = await Playlist.find();
   //   let data;
   //   playlists.forEach((playlist) => {
@@ -384,16 +419,16 @@ exports.playGround = async (req, res) => {
   //   },
   // ]);
   // const spotifyId = "332jKl2I2qZMbQSDciJD7i";
-  const spotifyId = "6uML7x40l9487G2o1HiA1L";
-  const playlist = await Playlist.findOne({ spotifyId });
-  const data = await Promise.all(
-    playlist.campaigns
-      .filter((campaign) => campaign.platform === "snapchat")
-      .map(async (campaign) => ({
-        campaign_id: campaign.campaign_id,
-        data: await getDailyStats(campaign.campaign_id, 2),
-      }))
-  );
+  // const spotifyId = "6uML7x40l9487G2o1HiA1L";
+  // const playlist = await Playlist.findOne({ spotifyId });
+  // const data = await Promise.all(
+  //   playlist.campaigns
+  //     .filter((campaign) => campaign.platform === "snapchat")
+  //     .map(async (campaign) => ({
+  //       campaign_id: campaign.campaign_id,
+  //       data: await getDailyStats(campaign.campaign_id, 2),
+  //     }))
+  // );
 
   // const data = await AdData.aggregate([
   //   {
@@ -436,7 +471,7 @@ exports.playGround = async (req, res) => {
   //   "facebook",
   //   spotifyId
   // );
-  res.status(200).send({ data });
+  res.status(200).send(formattedStreams);
 };
 
 // 6292888630774

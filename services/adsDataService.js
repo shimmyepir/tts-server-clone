@@ -327,6 +327,84 @@ class AdDataService {
     const data = await service.getDailyStats(campaignId, 27, advertiserId);
     await this.saveAdDataToDb(data, spotify_id, platform, campaignId);
   }
+
+  static async playlistSpendPerDayByCountry(spotifyIds, days) {
+    const data = await AdData.aggregate([
+      {
+        $match: {
+          spotify_id: { $in: spotifyIds },
+          date: {
+            $gte: startOfDay(sub(new Date(), { days })),
+            $lte: endOfDay(new Date()),
+          },
+        },
+      },
+      {
+        $group: {
+          _id: { date: "$formated_date", country: "$country" },
+          spend: { $sum: "$spend" },
+        },
+      },
+      {
+        $group: {
+          _id: "$_id.date",
+          spend: { $sum: "$spend" },
+          countries: {
+            $push: {
+              country: "$_id.country",
+              spend: "$spend",
+            },
+          },
+        },
+      },
+    ]);
+    const allCountries = [];
+    let spendPerDayPerCountry = {};
+    data.forEach((item) => {
+      const { _id, spend, countries } = item;
+      allCountries.push({
+        date: _id,
+        spend,
+      });
+      countries.forEach((item) => {
+        const country = item.country || "others";
+        if (spendPerDayPerCountry[country]) {
+          spendPerDayPerCountry[country].push({
+            date: _id,
+            spend: item.spend,
+          });
+        } else {
+          spendPerDayPerCountry[country] = [
+            {
+              date: _id,
+              spend: item.spend,
+            },
+          ];
+        }
+      });
+    });
+
+    Object.keys(spendPerDayPerCountry).forEach((key) => {
+      spendPerDayPerCountry[key] = spendPerDayPerCountry[key].sort(
+        (a, b) => new Date(a.date) - new Date(b.date)
+      );
+    });
+
+    spendPerDayPerCountry = Object.entries(spendPerDayPerCountry)
+      .sort(
+        (a, b) =>
+          a[1].reduce((a, b) => a.spend + b.spend, 0) -
+          b[1].reduce((a, b) => a.spend + b.spend, 0)
+      )
+      .reduce((r, [k, v]) => ({ ...r, [k]: v }), {});
+
+    return {
+      allCountries: allCountries.sort(
+        (a, b) => new Date(a.date) - new Date(b.date)
+      ),
+      spendPerDayPerCountry,
+    };
+  }
 }
 
 module.exports = AdDataService;

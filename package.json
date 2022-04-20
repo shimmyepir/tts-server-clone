@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "start": "nodemon server.js"
+    "start": "nodemon server.js",
+    "cypress": "cypress run"
   },
   "keywords": [],
   "author": "",

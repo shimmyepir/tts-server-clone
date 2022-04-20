@@ -5,8 +5,7 @@ const AppError = require("./utils/AppError");
 const globalErrorHandler = require("./controllers/errorController");
 const { spotifyWebApi } = require("./utils/spotify");
 const playlistRoutes = require("./routes/playlistRoutes");
-const tiktokRoutes = require("./routes/tiktokRoutes");
-const snapchatRoutes = require("./routes/snapchatRoutes");
+const artistsRoutes = require("./routes/artist");
 const facebookRoutes = require("./routes/facebookRoutes");
 const {
   schedulePlaylistFollowersCheck,
@@ -29,7 +28,7 @@ MIDDLEWARES
 
 app.use(cors());
 app.use(morgan("dev"));
-app.use(express.json());
+app.use(express.json({ limit: "50mb" }));
 
 /*
 ////////////////////
@@ -50,9 +49,7 @@ app.get("/api/v1", (req, res) => {
 })();
 
 app.use("/api/v1/playlists", playlistRoutes);
-app.use("/api/v1/tiktok", tiktokRoutes);
-app.use("/api/v1/snapchat", snapchatRoutes);
-app.use("/api/v1/facebook", facebookRoutes);
+app.use("/api/v1/artists", artistsRoutes);
 
 // app.get("/api/v1/test", (req, res) => {
 //   spotifyWebApi.getPlaylist('6QyGXdRpyIpm32ypGbL7M5').then((result)=> {

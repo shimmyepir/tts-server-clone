@@ -1,4 +1,8 @@
 {
   "viewportWidth": 1440,
-  "viewportHeight": 900
+  "viewportHeight": 900,
+  "defaultCommandTimeout": 10000,
+  "numTestsKeptInMemory": 0,
+  "video": false,
+  "screenshotOnRunFailure": false
 }

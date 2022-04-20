@@ -187,6 +187,13 @@ const getDailyCampaignsData = async (playlist) => {
   return { dailySpends, followers, dailySpendsPerCampaign };
 };
 
+const searchPlaylistsByName = async (name) => {
+  const playlists = await Playlist.find({
+    name: { $regex: name, $options: "i" },
+  });
+  return playlists;
+};
+
 module.exports = {
   getFollowersBetweenDates,
   getDailyCampaignsData,
@@ -194,4 +201,5 @@ module.exports = {
   getPlaylistCampaignsData,
   followersDaily,
   lastXDays,
+  searchPlaylistsByName,
 };
