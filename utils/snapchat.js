@@ -54,6 +54,26 @@ class Snapchat {
       }
     }
   }
+  async getCampaignsForAccount(adAccountId) {
+    try {
+      const response = await axios.get(
+        `${this.base_url}/adaccounts/${adAccountId}/campaigns`,
+        {
+          headers: {
+            Authorization: `Bearer ${this.access_token}`,
+          },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      if (error.response && error.response.status == 401) {
+        await this.refreshToken();
+        return await this.getCampaignsForAccount(adAccountId);
+      } else {
+        throw error;
+      }
+    }
+  }
 }
 
 const snapchat = new Snapchat();

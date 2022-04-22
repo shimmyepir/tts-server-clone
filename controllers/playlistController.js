@@ -13,16 +13,11 @@ const {
   followersDaily,
   searchPlaylistsByName,
 } = require("../services/playlistServices");
-const {
-  formatDailySpendPerFollower,
-  getKeyByValue,
-} = require("../utils/helpers");
+const { formatDailySpendPerFollower } = require("../utils/helpers");
 const AdData = require("../models/AdData");
 const CampaignRefreshReport = require("../models/CampaignRefreshReport");
-const { getDailyStats } = require("../services/snapchatService");
-const { exec, spawn } = require("child_process");
-const { streams } = require("../utils/streams");
-const countryCodes = require("../utils/countries");
+const ArtisteAdsInsightService = require("../services/artistAdsInsightsService");
+const ArtistAdsInsight = require("../models/ArtistAdsInsight");
 
 exports.addPlaylist = catchAsyncErrors(async (req, res) => {
   const { id } = req.params;
@@ -351,37 +346,22 @@ exports.artistReport = catchAsyncErrors(async (req, res, next) => {
   res.status(200).json({ summary, artistCampaignsData });
 });
 
-exports.playGround = async (req, res) => {
-  // exec("npm run cypress", (err, stdout, stderr) => {
-  //   if (err) {
-  //     console.error(err);
-  //     return;
-  //   }
-  //   });
-
-  // const child = spawn("npm", ["run", "cypress"]);
-
-  // child.stdout.on("data", (data) => {
-  //   console.log(`stdout:\n${data}`);
-  // });
-
-  // child.stderr.on("data", (data) => {
-  //   console.error(`stderr: ${data}`);
-  // });
-
-  // child.on("error", (error) => {
-  //   console.error(`error: ${error.message}`);
-  // });
-  const formattedStreams = {};
-  Object.keys(streams).forEach((key) => {
-    const countryCode = getKeyByValue(countryCodes, key)
-    if (!countryCode) console.log(key);
-    formattedStreams[countryCode] = streams[key];
-  });
-
-  // child.on("close", (code) => {
-  //   console.log(`child process exited with code ${code}`);
-  // });
+exports.playGround = catchAsyncErrors(async (req, res) => {
+  // const data = await ArtisteAdsInsightService.refreshAdsInsight("kato", 30);
+  const data = await ArtistAdsInsight.aggregate([
+    {
+      $match: {
+        platform: "tiktok",
+        formatedDate: "2022-04-04",
+      },
+    },
+    {
+      $group: {
+        _id: null,
+        spend: { $sum: "$spend" },
+      },
+    },
+  ]);
   //   const playlists = await Playlist.find();
   //   let data;
   //   playlists.forEach((playlist) => {
@@ -471,7 +451,7 @@ exports.playGround = async (req, res) => {
   //   "facebook",
   //   spotifyId
   // );
-  res.status(200).send(formattedStreams);
-};
+  res.status(200).send(data);
+});
 
 // 6292888630774

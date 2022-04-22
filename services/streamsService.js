@@ -127,7 +127,14 @@ class StreamsService {
       console.error(`error: ${error.message}`);
       runReport.update({ status: "failed", failedAt: new Date() });
     });
+
+    child.on("exit", function (code, signal) {
+      console.log(
+        "child process exited with " + `code ${code} and signal ${signal}`
+      );
+    });
   }
+
   static convertStringToNumber(string) {
     string = string.toLowerCase().split(".");
     if (string[1].length === 3) {

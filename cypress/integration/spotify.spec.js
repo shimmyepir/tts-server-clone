@@ -61,11 +61,13 @@ describe("kato stream update", () => {
                 //   )
                 // )
                 //   return;
-                cy.contains(country).click();
+                cy.contains(country).click({ force: true });
                 cy.wait(5000);
                 cy.get("body").then(($body) => {
                   if ($body.find("[data-testid='timeline-streams']").length) {
-                    cy.get("[data-testid='timeline-streams']").click();
+                    cy.get("[data-testid='timeline-streams']").click({
+                      force: true,
+                    });
                     cy.wait(2000);
                     cy.get(".spt-chart-a11y")
                       .then(($chart) => {
@@ -86,7 +88,7 @@ describe("kato stream update", () => {
                       })
 
                       .then(() => {
-                        cy.contains(country).click();
+                        cy.contains(country).click({ force: true });
                         // console.log(results);
                         cy.task(
                           "log",
@@ -96,7 +98,7 @@ describe("kato stream update", () => {
                         );
                       });
                   } else {
-                    cy.contains(country).click();
+                    cy.contains(country).click({ force: true });
                   }
                 });
               });

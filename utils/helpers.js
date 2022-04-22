@@ -19,3 +19,7 @@ exports.getKeyByValue = (object, value) => {
     (key) => object[key].toLowerCase() === value.toLowerCase()
   );
 };
+
+exports.wait = (t) => {
+  return new Promise((resolve) => setTimeout(resolve, t));
+};

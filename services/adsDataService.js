@@ -7,6 +7,7 @@ const FacebookService = require("./facebookService");
 const TikTokService = require("./tiktokService");
 const { lastXDays, followersDaily } = require("./playlistServices");
 const CampaignRefreshReport = require("../models/CampaignRefreshReport");
+const ArtistAdsInsight = require("../models/ArtistAdsInsight");
 
 const getDate = (date) => {
   const dateArray = date.split("-").map(Number);
@@ -328,11 +329,11 @@ class AdDataService {
     await this.saveAdDataToDb(data, spotify_id, platform, campaignId);
   }
 
-  static async playlistSpendPerDayByCountry(spotifyIds, days) {
-    const data = await AdData.aggregate([
+  static async playlistSpendPerDayByCountry(days) {
+    const data = await ArtistAdsInsight.aggregate([
       {
         $match: {
-          spotify_id: { $in: spotifyIds },
+          artistName: "kato",
           date: {
             $gte: startOfDay(sub(new Date(), { days })),
             $lte: endOfDay(new Date()),
@@ -341,7 +342,7 @@ class AdDataService {
       },
       {
         $group: {
-          _id: { date: "$formated_date", country: "$country" },
+          _id: { date: "$formatedDate", country: "$country" },
           spend: { $sum: "$spend" },
         },
       },

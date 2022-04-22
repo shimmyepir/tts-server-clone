@@ -9,11 +9,7 @@ const countryCodes = require("../utils/countries");
 const { getKeyByValue } = require("../utils/helpers");
 
 exports.getArtistEarningsSpends = catchAsyncErrors(async (req, res, next) => {
-  const { artistId } = req.params;
-  const playlists = await searchPlaylistsByName(artistId);
-  if (!playlists.length) return next(new AppError("No playlists found"));
-  const spotifyIds = playlists.map((playlist) => playlist.spotifyId);
-  const data = await AdDataService.playlistSpendPerDayByCountry(spotifyIds, 29);
+  const data = await AdDataService.playlistSpendPerDayByCountry(29);
   const streams = await Streams.findOne().sort("-createdAt").limit(1);
   const incomeSpends = StreamsService.formatStreamsData(streams.streams, data);
   res.status(200).json({ incomeSpends });

@@ -2,7 +2,11 @@ const mongoose = require("mongoose");
 
 const artistSchema = new mongoose.Schema(
   {
-    name: { type: String, required: true },
+    name: {
+      type: String,
+      required: true,
+      unique: true,
+    },
     spotifyArtistId: {
       type: String,
       required: true,
