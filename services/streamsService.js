@@ -27,7 +27,7 @@ class StreamsService {
         const streams = this.convertStringToNumber(totalStreams);
         let income = 0;
         if (key !== "Worldwide") {
-          const earningsPerThousandStreams = CPM[key] || 0.5;
+          const earningsPerThousandStreams = CPM[key] || 0.1;
           income = (streams / 1000) * earningsPerThousandStreams;
         }
         return {

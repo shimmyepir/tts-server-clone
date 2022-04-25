@@ -347,21 +347,21 @@ exports.artistReport = catchAsyncErrors(async (req, res, next) => {
 });
 
 exports.playGround = catchAsyncErrors(async (req, res) => {
-  // const data = await ArtisteAdsInsightService.refreshAdsInsight("kato", 30);
-  const data = await ArtistAdsInsight.aggregate([
-    {
-      $match: {
-        platform: "tiktok",
-        formatedDate: "2022-04-04",
-      },
-    },
-    {
-      $group: {
-        _id: null,
-        spend: { $sum: "$spend" },
-      },
-    },
-  ]);
+  // const data = await ArtisteAdsInsightService.refreshAdsInsight("kato", 3);
+  // const data = await ArtistAdsInsight.aggregate([
+  //   {
+  //     $match: {
+  //       platform: "tiktok",
+  //       formatedDate: "2022-04-04",
+  //     },
+  //   },
+  //   {
+  //     $group: {
+  //       _id: null,
+  //       spend: { $sum: "$spend" },
+  //     },
+  //   },
+  // ]);
   //   const playlists = await Playlist.find();
   //   let data;
   //   playlists.forEach((playlist) => {

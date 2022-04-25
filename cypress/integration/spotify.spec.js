@@ -61,7 +61,7 @@ describe("kato stream update", () => {
                 //   )
                 // )
                 //   return;
-                cy.contains(country).click({ force: true });
+                cy.contains(country).click();
                 cy.wait(5000);
                 cy.get("body").then(($body) => {
                   if ($body.find("[data-testid='timeline-streams']").length) {
@@ -88,7 +88,7 @@ describe("kato stream update", () => {
                       })
 
                       .then(() => {
-                        cy.contains(country).click({ force: true });
+                        cy.contains(country).click();
                         // console.log(results);
                         cy.task(
                           "log",
@@ -98,7 +98,7 @@ describe("kato stream update", () => {
                         );
                       });
                   } else {
-                    cy.contains(country).click({ force: true });
+                    cy.contains(country).click();
                   }
                 });
               });
