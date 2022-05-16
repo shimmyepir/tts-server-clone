@@ -14,111 +14,111 @@ describe("kato stream update", () => {
       .should("have.value", "Drenathan1!");
     cy.contains("Log In").click();
     cy.get("body").then(($body) => {
-      cy.get('*[class^="Popover-sc"]')
+      // cy.get('*[class^="Popover-sc"]')
+      //   .within(() => {
+      //     cy.get("button").click();
+      //   })
+      //   .then(() => {
+      /**
+       *
+       * // MAIN SCRIPT
+       *
+       */
+      const countries = [];
+      const results = {};
+      cy.get("[data-testid='timeline-streams']").click();
+      cy.wait(2000);
+      cy.get(".spt-chart-a11y")
+        .children()
+        .each(($el, index) => {
+          if (index !== 0) {
+            const spend = $el.attr("aria-label");
+            if (results.Worldwide) {
+              results.Worldwide.push(spend);
+            } else {
+              results.Worldwide = [spend];
+            }
+          }
+        })
+        .then(() => cy.task("log", `progress added worldwide`));
+      cy.contains("Worldwide").click();
+      cy.get('*[class^="Overlay-u80gmt-0"]')
         .within(() => {
-          cy.get("button").click();
+          cy.get('[role="listbox"]')
+            .children()
+            .each(($el) => {
+              const country = $el.text();
+              if (country !== "Worldwide") {
+                countries.push(country);
+              }
+            });
         })
         .then(() => {
-          /**
-           *
-           * // MAIN SCRIPT
-           *
-           */
-          const countries = [];
-          const results = {};
-          cy.get("[data-testid='timeline-streams']").click();
-          cy.wait(2000);
-          cy.get(".spt-chart-a11y")
-            .children()
-            .each(($el, index) => {
-              if (index !== 0) {
-                const spend = $el.attr("aria-label");
-                if (results.Worldwide) {
-                  results.Worldwide.push(spend);
-                } else {
-                  results.Worldwide = [spend];
-                }
-              }
-            })
-            .then(() => cy.task("log", `progress added worldwide`));
-          cy.contains("Worldwide").click();
-          cy.get(".Overlay-u80gmt-0.cIdoSH")
-            .within(() => {
-              cy.get('[role="listbox"]')
-                .children()
-                .each(($el) => {
-                  const country = $el.text();
-                  if (country !== "Worldwide") {
-                    countries.push(country);
-                  }
+          countries.forEach((country, index) => {
+            // if (
+            //   !["Guinea-Bissau", "Guyana", "United States"].includes(
+            //     country
+            //   )
+            // )
+            //   return;
+            cy.contains(country).click();
+            cy.wait(5000);
+            cy.get("body").then(($body) => {
+              if ($body.find("[data-testid='timeline-streams']").length) {
+                cy.get("[data-testid='timeline-streams']").click({
+                  force: true,
                 });
-            })
-            .then(() => {
-              countries.forEach((country, index) => {
-                // if (
-                //   !["Guinea-Bissau", "Guyana", "United States"].includes(
-                //     country
-                //   )
-                // )
-                //   return;
-                cy.contains(country).click();
-                cy.wait(5000);
-                cy.get("body").then(($body) => {
-                  if ($body.find("[data-testid='timeline-streams']").length) {
-                    cy.get("[data-testid='timeline-streams']").click({
-                      force: true,
-                    });
-                    cy.wait(2000);
-                    cy.get(".spt-chart-a11y")
-                      .then(($chart) => {
-                        if ($chart.length) {
-                          cy.get(".spt-chart-a11y")
-                            .children()
-                            .each(($el, index) => {
-                              if (index !== 0) {
-                                const spend = $el.attr("aria-label");
-                                if (results[country]) {
-                                  results[country].push(spend);
-                                } else {
-                                  results[country] = [spend];
-                                }
-                              }
-                            });
-                        }
-                      })
+                cy.wait(2000);
+                cy.get(".spt-chart-a11y")
+                  .then(($chart) => {
+                    if ($chart.length) {
+                      cy.get(".spt-chart-a11y")
+                        .children()
+                        .each(($el, index) => {
+                          if (index !== 0) {
+                            const spend = $el.attr("aria-label");
+                            if (results[country]) {
+                              results[country].push(spend);
+                            } else {
+                              results[country] = [spend];
+                            }
+                          }
+                        });
+                    }
+                  })
 
-                      .then(() => {
-                        cy.contains(country).click();
-                        // console.log(results);
-                        cy.task(
-                          "log",
-                          `PROGRESSSTART${index + 1}/${
-                            countries.length
-                          }/${country}PROGRESSEND `
-                        );
-                      });
-                  } else {
+                  .then(() => {
                     cy.contains(country).click();
-                  }
-                });
-              });
-            })
-            .then(() => {
-              // console.log(results);
-              const url =
-                process.env.NODE_ENV === "production"
-                  ? "https://tts-systems.de/api/v1/artists/kato/streams"
-                  : "http://127.0.0.1:5000/api/v1/artists/kato/streams";
-
-              cy.request("POST", url, { streams: results });
-              //send report to server
+                    // console.log(results);
+                    cy.task(
+                      "log",
+                      `PROGRESSSTART${index + 1}/${
+                        countries.length
+                      }/${country}PROGRESSEND `
+                    );
+                  });
+              } else {
+                cy.contains(country).click();
+              }
             });
-          /**
-           *
-           * // MAIN SCRIPT
-           *
-           */
+          });
+        })
+        .then(() => {
+          // console.log(results);
+          const url =
+            process.env.NODE_ENV === "production"
+              ? "https://tts-systems.de/api/v1/artists/kato/streams"
+              : "http://127.0.0.1:5000/api/v1/artists/kato/streams";
+
+          cy.request("POST", url, { streams: results });
+          //send report to server
         });
+      /**
+       *
+       * // MAIN SCRIPT
+       *
+       */
+      // });
     });
   });
 });

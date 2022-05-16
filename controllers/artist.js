@@ -48,6 +48,13 @@ const canRunRefreshAfterTime = (date) => {
   return diffInMinutes > 60 * 6;
 };
 
+const runningForToolong = (date) => {
+  const now = new Date();
+  const diff = now - new Date(date);
+  const diffInMinutes = Math.round(diff / 60000);
+  return diffInMinutes > 1;
+};
+
 exports.refreshArtistStreamsData = catchAsyncErrors(async (req, res, next) => {
   const lastRefreshRun = await StreamsRefreshRun.findOne({
     artistName: "kato",
@@ -55,8 +62,18 @@ exports.refreshArtistStreamsData = catchAsyncErrors(async (req, res, next) => {
     .sort("-createdAt")
     .limit(1);
 
-  if (lastRefreshRun && lastRefreshRun.status === "running") {
+  if (
+    lastRefreshRun &&
+    lastRefreshRun.status === "running" &&
+    !runningForToolong(lastRefreshRun.updatedAt)
+  ) {
     return next(new AppError("Refresh already running for this artist", 400));
+  } else if (
+    lastRefreshRun &&
+    lastRefreshRun.status === "running" &&
+    runningForToolong(lastRefreshRun.updatedAt)
+  ) {
+    await lastRefreshRun.update({ status: "failed" });
   }
 
   if (

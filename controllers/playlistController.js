@@ -347,7 +347,7 @@ exports.artistReport = catchAsyncErrors(async (req, res, next) => {
 });
 
 exports.playGround = catchAsyncErrors(async (req, res) => {
-  // const data = await ArtisteAdsInsightService.refreshAdsInsight("kato", 3);
+  const data = await ArtisteAdsInsightService.refreshAdsInsight("kato", 4);
   // const data = await ArtistAdsInsight.aggregate([
   //   {
   //     $match: {
