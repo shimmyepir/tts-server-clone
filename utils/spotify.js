@@ -8,6 +8,7 @@ const spotifyWebApi = new SpotifyWebApi({
   redirectUri: process.env.SPOTIFY_REDIRECT_URI,
 });
 
+
 spotifyWebApi.setAccessToken(process.env.SPOTIFY_ACCESS_TOKEN);
 spotifyWebApi.setRefreshToken(process.env.SPOTIFY_REFRESH_TOKEN);
 

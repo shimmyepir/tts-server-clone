@@ -10,8 +10,8 @@ describe("kato stream update", () => {
       .type("damiflo94@gmail.com")
       .should("have.value", "damiflo94@gmail.com");
     cy.get("#login-password")
-      .type("Drenathan1!")
-      .should("have.value", "Drenathan1!");
+      .type("olanrewaju")
+      .should("have.value", "olanrewaju");
     cy.contains("Log In").click();
     cy.get("body").then(($body) => {
       // cy.get('*[class^="Popover-sc"]')

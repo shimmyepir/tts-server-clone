@@ -18,6 +18,7 @@ const AdData = require("../models/AdData");
 const CampaignRefreshReport = require("../models/CampaignRefreshReport");
 const ArtisteAdsInsightService = require("../services/artistAdsInsightsService");
 const ArtistAdsInsight = require("../models/ArtistAdsInsight");
+const Email = require("../utils/Email");
 
 exports.addPlaylist = catchAsyncErrors(async (req, res) => {
   const { id } = req.params;
@@ -348,6 +349,8 @@ exports.artistReport = catchAsyncErrors(async (req, res, next) => {
 
 exports.playGround = catchAsyncErrors(async (req, res) => {
   const data = await ArtisteAdsInsightService.refreshAdsInsight("kato", 4);
+  // const email = new Email('udistribusiness@gmail.com')
+  // await email.sendPlaylistNotTracking()
   // const data = await ArtistAdsInsight.aggregate([
   //   {
   //     $match: {
