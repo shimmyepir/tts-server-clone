@@ -47,6 +47,9 @@ jobs:
           ENV_SNAPCHAT_REFRESH_TOKEN: ${{ secrets.SNAPCHAT_REFRESH_TOKEN }}
           ENV_FACEBOOK_ACCESS_TOKEN: ${{ secrets.FACEBOOK_ACCESS_TOKEN }}
           ENV_FACEBOOK_ACCESS_TOKEN_LONG: ${{ secrets.FACEBOOK_ACCESS_TOKEN_LONG }}
+          ENV_MAILGUN_USERNAME: ${{ secrets.MAILGUN_USERNAME }}
+          ENV_MAILGUN_PASSWORD: ${{ secrets.MAILGUN_PASSWORD }}
+          ENV_EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
 
       - run: npm i
       - run: pm2 reload server
