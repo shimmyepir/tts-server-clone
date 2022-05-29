@@ -5,6 +5,7 @@ const Playlist = require("../models/Playlist");
 const Playlistfollower = require("../models/PlaylistFollowers");
 const PlaylistsCount = require("../models/PlaylistsCount");
 const Email = require("../utils/Email");
+const ArtisteAdsInsightService = require("../services/artistAdsInsightsService");
 
 exports.schedulePlaylistFollowersCheck = async () => {
   console.log("scheduled playlist followers check");
@@ -21,8 +22,8 @@ exports.schedulePlaylistFollowersCheck = async () => {
       .limit(1);
     console.log(followers.length, playlistCount[0].count);
     if (followers.length < playlistCount[0].count * 0.9) {
-      await new Email('udistribusiness@gmail.com').sendPlaylistNotTracking()
-      await new Email('oludareodedoyin@gmail.com').sendPlaylistNotTracking()
+      await new Email("udistribusiness@gmail.com").sendPlaylistNotTracking();
+      await new Email("oludareodedoyin@gmail.com").sendPlaylistNotTracking();
       console.log("no followers found restarting server", new Date());
       exec("pm2 reload server");
     }
@@ -35,5 +36,18 @@ exports.schedulePlaylistsCount = async () => {
     const playlists = await Playlist.find();
     console.log("updating playlist count", playlists.length, new Date());
     await PlaylistsCount.create({ count: playlists.length });
+  });
+};
+
+exports.scheduleAdsInsightsRefresh = async () => {
+  console.log("scheduled ads ");
+  cron.schedule("0 1 * * *", async () => {
+    try {
+      await ArtisteAdsInsightService.refreshAdsInsight("kato", 4);
+    } catch (error) {
+      setTimeout(() => {
+        ArtisteAdsInsightService.refreshAdsInsight("kato", 1).catch();
+      }, 60000);
+    }
   });
 };
