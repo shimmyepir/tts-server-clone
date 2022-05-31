@@ -10,6 +10,7 @@ const facebookRoutes = require("./routes/facebookRoutes");
 const {
   schedulePlaylistFollowersCheck,
   schedulePlaylistsCount,
+  scheduleAdsInsightsRefresh,
 } = require("./services/cronService");
 
 /*
@@ -85,6 +86,7 @@ app.use(globalErrorHandler);
 if (process.env.NODE_ENV === "production") {
   schedulePlaylistFollowersCheck();
   schedulePlaylistsCount();
+  scheduleAdsInsightsRefresh();
 }
 
 module.exports = app;

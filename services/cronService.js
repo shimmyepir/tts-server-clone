@@ -21,7 +21,7 @@ exports.schedulePlaylistFollowersCheck = async () => {
       .sort("-createdAt")
       .limit(1);
     console.log(followers.length, playlistCount[0].count);
-    if (followers.length < playlistCount[0].count * 0.9) {
+    if (followers.length < playlistCount[0].count * 0.5) {
       await new Email("udistribusiness@gmail.com").sendPlaylistNotTracking();
       await new Email("oludareodedoyin@gmail.com").sendPlaylistNotTracking();
       console.log("no followers found restarting server", new Date());
@@ -40,8 +40,8 @@ exports.schedulePlaylistsCount = async () => {
 };
 
 exports.scheduleAdsInsightsRefresh = async () => {
-  console.log("scheduled ads ");
-  cron.schedule("0 1 * * *", async () => {
+  console.log("scheduled ads insights refresh");
+  cron.schedule("0 5 * * *", async () => {
     try {
       await ArtisteAdsInsightService.refreshAdsInsight("kato", 4);
     } catch (error) {
