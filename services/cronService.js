@@ -21,7 +21,7 @@ exports.schedulePlaylistFollowersCheck = async () => {
       .sort("-createdAt")
       .limit(1);
     console.log(followers.length, playlistCount[0].count);
-    if (followers.length < playlistCount[0].count * 0.5) {
+    if (followers.length < playlistCount[0].count * 0.1) {
       await new Email("udistribusiness@gmail.com").sendPlaylistNotTracking();
       await new Email("oludareodedoyin@gmail.com").sendPlaylistNotTracking();
       console.log("no followers found restarting server", new Date());
