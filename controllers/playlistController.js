@@ -16,6 +16,7 @@ const {
 const { formatDailySpendPerFollower } = require("../utils/helpers");
 const AdData = require("../models/AdData");
 const CampaignRefreshReport = require("../models/CampaignRefreshReport");
+const FacebookService = require("../services/facebookService");
 const ArtisteAdsInsightService = require("../services/artistAdsInsightsService");
 const ArtistAdsInsight = require("../models/ArtistAdsInsight");
 const Email = require("../utils/Email");
@@ -348,112 +349,14 @@ exports.artistReport = catchAsyncErrors(async (req, res, next) => {
 });
 
 exports.playGround = catchAsyncErrors(async (req, res) => {
-  const data = await ArtisteAdsInsightService.refreshAdsInsight("kato", 4);
-  // const email = new Email('udistribusiness@gmail.com')
-  // await email.sendPlaylistNotTracking()
-  // const data = await ArtistAdsInsight.aggregate([
-  //   {
-  //     $match: {
-  //       platform: "tiktok",
-  //       formatedDate: "2022-04-04",
-  //     },
-  //   },
-  //   {
-  //     $group: {
-  //       _id: null,
-  //       spend: { $sum: "$spend" },
-  //     },
-  //   },
-  // ]);
-  //   const playlists = await Playlist.find();
-  //   let data;
-  //   playlists.forEach((playlist) => {
-  //     const { campaigns } = playlist;
-  //     const foundCampaings = {};
-  //     if (campaigns.length > 1) {
-  //       campaigns.forEach((campaign) => {
-  //         foundCampaings[campaign.campaign_id] = foundCampaings[
-  //           campaign.campaign_id
-  //         ]
-  //           ? foundCampaings[campaign.campaign_id] + 1
-  //           : 1;
-  //       });
-  //       console.log(foundCampaings);
-  //       data = Object.entries(foundCampaings).map(([key, value]) => {
-  //         if (value > 1) return { [key]: value };
-  //       });
-  //     }
-  //   });
-  // const data = await Playlist.aggregate([
-  //   {
-  //     $unwind: "$campaigns",
-  //   },
-  //   {
-  //     $group: {
-  //       _id: "$campaigns.campaign_id",
-  //       total: { $sum: 1 },
-  //       docs: { $push: "$$ROOT" },
-  //     },
-  //   },
-  //   {
-  //     $match: {
-  //       total: { $gt: 1 },
-  //     },
-  //   },
-  // ]);
-  // const spotifyId = "332jKl2I2qZMbQSDciJD7i";
-  // const spotifyId = "6uML7x40l9487G2o1HiA1L";
-  // const playlist = await Playlist.findOne({ spotifyId });
-  // const data = await Promise.all(
-  //   playlist.campaigns
-  //     .filter((campaign) => campaign.platform === "snapchat")
-  //     .map(async (campaign) => ({
-  //       campaign_id: campaign.campaign_id,
-  //       data: await getDailyStats(campaign.campaign_id, 2),
-  //     }))
-  // );
+  // const data = await ArtisteAdsInsightService.refreshAdsInsight("kato", 4);
+  // const data = await FacebookService.getDailyStats("6320052117774", 3);
+  const data = await FacebookService.getCampaign(
+    "2022-08-26",
+    "2022-08-27",
+    "6320052117774"
+  );
 
-  // const data = await AdData.aggregate([
-  //   {
-  //     $match: {
-  //       spotify_id: spotifyId,
-  //       platform: "facebook",
-  //       date: {
-  //         $gte: startOfDay(new Date("2022-01-31")),
-  //         $lte: endOfDay(new Date("2022-01-31")),
-  //       },
-  //     },
-  //   },
-  //   {
-  //     $group: {
-  //       _id: "$campaign_id",
-  //       // campaign: { $push: "$$ROOT" },
-  //       spend: { $sum: "$spend" },
-  //     },
-  //   },
-  //   {
-  //     $group: {
-  //       _id: null,
-  //       // campaign: { $push: "$$ROOT" },
-  //       spend: { $sum: "$spend" },
-  //     },
-  //   },
-  // ]);
-  // const playlist = await Playlist.findOne({ spotifyId });
-  // const campaignsNotFound = [];
-  // playlist.campaigns.forEach((campaign) => {
-  //   if (!data.find((item) => item._id === campaign.campaign_id)) {
-  //     campaignsNotFound.push({
-  //       ...campaign.toObject(),
-  //       spotify_id: playlist.spotifyId,
-  //     });
-  //   }
-  // });
-  // await AdDataService.addNewCampaignAdData(
-  //   "6292885114974",
-  //   "facebook",
-  //   spotifyId
-  // );
   res.status(200).send(data);
 });
 

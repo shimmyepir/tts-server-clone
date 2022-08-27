@@ -33,10 +33,7 @@ class AdDataService {
       });
 
       if (adData) {
-        console.log("updating");
-        // if (adData.spotify_id !== spotify_id)
-        //   console.log("Beware, this is not a duplicate");
-        // // adData.update();
+        // console.log("updating");
         await AdData.findByIdAndUpdate(
           adData.id,
           {

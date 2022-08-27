@@ -9,7 +9,7 @@ const ArtisteAdsInsightService = require("../services/artistAdsInsightsService")
 
 exports.schedulePlaylistFollowersCheck = async () => {
   console.log("scheduled playlist followers check");
-  cron.schedule("*/20 * * * *", async () => {
+  cron.schedule("*/40 * * * *", async () => {
     console.log("checking database for recent followers", new Date());
     const followers = await Playlistfollower.find({
       createdAt: {

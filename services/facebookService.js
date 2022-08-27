@@ -16,14 +16,20 @@ const getCampaign = async (startDate, endDate, campaignId) => {
   const response = await axiosClient.get(`/${campaignId}/insights`, {
     params: {
       access_token: process.env.FACEBOOK_ACCESS_TOKEN_LONG,
-      fields: "clicks,cpc,impressions,objective,spend,account_name",
+      fields:
+        "inline_link_clicks,cost_per_inline_link_click,impressions,objective,spend,account_name",
       time_range: {
         since: startDate,
         until: endDate,
       },
     },
   });
-  return response.data.data[0];
+
+  return response.data.data.map((item) => ({
+    ...item,
+    clicks: item.inline_link_clicks,
+    cpc: item.cost_per_inline_link_click,
+  }))[0];
 };
 
 const getDailyStats = async (campaignId, days) => {
@@ -32,7 +38,8 @@ const getDailyStats = async (campaignId, days) => {
   const { data } = await axiosClient.get(`/${campaignId}/insights`, {
     params: {
       access_token: process.env.FACEBOOK_ACCESS_TOKEN_LONG,
-      fields: "clicks,cpc,impressions,objective,spend",
+      fields:
+        "impressions,objective,spend,inline_link_clicks,cost_per_inline_link_click",
       breakdowns: "country",
       time_increment: 1,
       limit: 500,
@@ -44,12 +51,19 @@ const getDailyStats = async (campaignId, days) => {
   });
   const dailySpends = [];
   data.data.forEach((item) => {
-    const { date_start, impressions, spend, clicks, cpc, country } = item;
+    const {
+      date_start,
+      impressions,
+      spend,
+      inline_link_clicks,
+      cost_per_inline_link_click,
+      country,
+    } = item;
     dailySpends.push({
       date: date_start,
-      cpc: cpc ? Number(cpc) : 0,
+      cpc: cost_per_inline_link_click ? Number(cost_per_inline_link_click) : 0,
       impressions: Number(impressions),
-      clicks: Number(clicks),
+      clicks: Number(inline_link_clicks),
       spend: Number(spend) || 0,
       country,
     });
