@@ -22,6 +22,7 @@ const ArtistAdsInsight = require("../models/ArtistAdsInsight");
 const Email = require("../utils/Email");
 const PlaylistStreams = require("../models/PlaylistStreams");
 const StreamsService = require("../services/streamsService");
+const PlaylistStreamsService = require("../services/playlistStreamsService");
 
 exports.addPlaylist = catchAsyncErrors(async (req, res) => {
   const { id } = req.params;
@@ -168,7 +169,13 @@ exports.getCampaignsReport = catchAsyncErrors(async (req, res) => {
     };
   }
   const followers = await getFollowersBetweenDates(id, startDate, endDate);
-  res.status(200).json({ ...report, followers });
+  const playlistStreams =
+    await PlaylistStreamsService.getPlaylisStreamsBetweenDates(
+      id,
+      startDate,
+      endDate
+    );
+  res.status(200).json({ ...report, followers, playlistStreams });
 });
 
 exports.getDailyCampaignsReport = catchAsyncErrors(async (req, res, next) => {
@@ -377,7 +384,7 @@ exports.addPlaylistStreams = async (req, res, next) => {
       await PlaylistStreams.create({
         spotifyId: id,
         formattedDate,
-        streams,
+        streams: Number(streams),
         artistId,
         artistName,
       });

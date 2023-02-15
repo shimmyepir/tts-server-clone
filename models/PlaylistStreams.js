@@ -15,7 +15,7 @@ const playlistStreamsSchema = new mongoose.Schema(
       required: true,
     },
     streams: {
-      type: String,
+      type: Number,
       required: true,
     },
     formattedDate: {
