@@ -51,6 +51,15 @@ app.get("/api/v1", (req, res) => {
 
 app.use("/api/v1/playlists", playlistRoutes);
 app.use("/api/v1/artists", artistsRoutes);
+app.get("/api/v1/refresh", async (req, res) => {
+  try {
+    const { body } = await spotifyWebApi.refreshAccessToken();
+    console.log(body);
+    res.send(body);
+  } catch (err) {
+    console.log(err);
+  }
+});
 
 // app.get("/api/v1/test", (req, res) => {
 //   spotifyWebApi.getPlaylist('6QyGXdRpyIpm32ypGbL7M5').then((result)=> {
@@ -90,3 +99,4 @@ if (process.env.NODE_ENV === "production") {
 }
 
 module.exports = app;
+

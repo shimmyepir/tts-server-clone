@@ -9,7 +9,7 @@ const { NODE_ENV, PROD_DB_URI, DB_URI } = process.env;
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`app running at port ${PORT}`));
 
-const DB = NODE_ENV === "production" ? PROD_DB_URI : DB_URI;
+const DB = NODE_ENV !== "production" ? PROD_DB_URI : DB_URI;
 
 mongoose
   .connect(DB, {

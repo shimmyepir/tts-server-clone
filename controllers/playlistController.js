@@ -1,4 +1,4 @@
-const { startOfDay, endOfDay } = require("date-fns");
+const { startOfDay, endOfDay, format } = require("date-fns");
 const Playlist = require("../models/Playlist");
 const PlaylistFollowers = require("../models/PlaylistFollowers");
 const AdDataService = require("../services/adsDataService");
@@ -20,6 +20,8 @@ const FacebookService = require("../services/facebookService");
 const ArtisteAdsInsightService = require("../services/artistAdsInsightsService");
 const ArtistAdsInsight = require("../models/ArtistAdsInsight");
 const Email = require("../utils/Email");
+const PlaylistStreams = require("../models/PlaylistStreams");
+const StreamsService = require("../services/streamsService");
 
 exports.addPlaylist = catchAsyncErrors(async (req, res) => {
   const { id } = req.params;
@@ -360,4 +362,34 @@ exports.playGround = catchAsyncErrors(async (req, res) => {
   res.status(200).send(data);
 });
 
-// 6292888630774
+exports.addPlaylistStreams = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { streams, artistId, artistName } = req.body;
+    const formattedDate = format(new Date(), "yyyy-MM-dd");
+    const existingPlaylistStreams = await PlaylistStreams.findOne({
+      spotifyId: id,
+      formattedDate,
+      artistId,
+    });
+
+    if (!existingPlaylistStreams)
+      await PlaylistStreams.create({
+        spotifyId: id,
+        formattedDate,
+        streams,
+        artistId,
+        artistName,
+      });
+    else console.log("Playlist streams already exist for today");
+    res.sendStatus(200);
+  } catch (err) {
+    console.log(err);
+    res.sendStatus(200);
+  }
+};
+
+exports.fetchPlaylistsStreams = catchAsyncErrors(async (req, res, next) => {
+  StreamsService.refreshPlaylistsStreams();
+  res.sendStatus(200);
+});

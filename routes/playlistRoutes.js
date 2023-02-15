@@ -19,6 +19,8 @@ const {
   playGround,
   campaignsDailyStats,
   artistReport,
+  addPlaylistStreams,
+  fetchPlaylistsStreams,
 } = require("../controllers/playlistController");
 
 router.get("/", getPlaylists);
@@ -27,6 +29,7 @@ router.get("/latest-campaign-report", getLatestCampaignsReport);
 router.get("/tests", playGround);
 router.get("/artist-report", artistReport);
 router.post("/refresh-campaigns", refreshCampaignsAdData);
+router.post("/refresh-streams", fetchPlaylistsStreams);
 router
   .route("/:id")
   .get(getPlaylist)
@@ -34,6 +37,7 @@ router
   .put(updatePlaylist)
   .delete(deletePlaylist);
 router.route("/:id/followers").get(getFollowers);
+router.route("/:id/streams").post(addPlaylistStreams);
 router.get("/:id/followers-per-day", followersPerDayPerPeriod);
 router.route("/:id/campaigns").post(addCampaign);
 router.route("/:id/campaigns/:campaignId").delete(removeCampaign);

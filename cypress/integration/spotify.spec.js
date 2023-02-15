@@ -1,5 +1,3 @@
-// const { streams } = require("../../utils/streams");
-
 describe("kato stream update", () => {
   it("refresh stream", () => {
     cy.task("log", "ENVIRONMENT: " + process.env.NODE_ENV);
@@ -14,11 +12,6 @@ describe("kato stream update", () => {
       .should("have.value", "olanrewaju");
     cy.contains("Log In").click();
     cy.get("body").then(($body) => {
-      // cy.get('*[class^="Popover-sc"]')
-      //   .within(() => {
-      //     cy.get("button").click();
-      //   })
-      //   .then(() => {
       /**
        *
        * // MAIN SCRIPT
@@ -104,7 +97,6 @@ describe("kato stream update", () => {
           });
         })
         .then(() => {
-          // console.log(results);
           const url =
             process.env.NODE_ENV === "production"
               ? "https://tts-systems.de/api/v1/artists/kato/streams"

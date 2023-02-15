@@ -98,7 +98,13 @@ class StreamsService {
   }
 
   static async refreshStreams(runReport) {
-    const child = spawn("npm", ["run", "cypress"]);
+    const child = spawn("npm", [
+      "run",
+      "cypress",
+      "--",
+      "--spec",
+      "cypress/integration/spotify.spec.js",
+    ]);
 
     child.stdout.on("data", async (data) => {
       console.log(`stdout:\n${data}`);
@@ -126,6 +132,35 @@ class StreamsService {
     child.on("error", (error) => {
       console.error(`error: ${error.message}`);
       runReport.update({ status: "failed", failedAt: new Date() });
+    });
+
+    child.on("exit", function (code, signal) {
+      console.log(
+        "child process exited with " + `code ${code} and signal ${signal}`
+      );
+    });
+  }
+
+  static async refreshPlaylistsStreams() {
+    const child = spawn("npm", [
+      "run",
+      "cypress",
+      "--",
+      "--spec",
+      "cypress/integration/playlist-streams.spec.js",
+    ]);
+
+    child.stdout.on("data", async (data) => {
+      console.log(`stdout:\n${data}`);
+    });
+    child.stderr.on("data", (data) => {
+      if (data.includes("ERR!")) {
+        console.log("ERRORRORR: ", data);
+      }
+    });
+
+    child.on("error", (error) => {
+      console.error(`error: ${error.message}`);
     });
 
     child.on("exit", function (code, signal) {
