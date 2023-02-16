@@ -23,6 +23,7 @@ const Email = require("../utils/Email");
 const PlaylistStreams = require("../models/PlaylistStreams");
 const StreamsService = require("../services/streamsService");
 const PlaylistStreamsService = require("../services/playlistStreamsService");
+const { RefreshRun, REFRESH_RUN_TYPES } = require("../models/RefreshRun");
 
 exports.addPlaylist = catchAsyncErrors(async (req, res) => {
   const { id } = req.params;
@@ -210,10 +211,17 @@ exports.getSnapchatSpend = catchAsyncErrors(async (req, res) => {
 });
 
 exports.getLatestCampaignsReport = catchAsyncErrors(async (req, res) => {
-  const report = await CampaignRefreshReport.findOne({})
+  const report = await CampaignRefreshReport.findOne({}).sort("-createdAt");
+  res.status(200).json({ report });
+});
+
+exports.getLatestStreamsRefreshRun = catchAsyncErrors(async (req, res) => {
+  const refreshRun = await RefreshRun.findOne({
+    type: REFRESH_RUN_TYPES.PLAYLIST_STREAMS,
+  })
     .sort("-createdAt")
     .limit(1);
-  res.status(200).json({ report });
+  res.status(200).json({ refreshRun });
 });
 
 exports.refreshCampaignsAdData = catchAsyncErrors(async (req, res) => {

@@ -2,6 +2,11 @@ const { format } = require("date-fns");
 const { CPM } = require("../utils/streams");
 const { spawn } = require("child_process");
 const StreamsRefreshRun = require("../models/StreamsRefreshRun");
+const {
+  RefreshRun,
+  REFRESH_RUN_STATUS,
+  REFRESH_RUN_TYPES,
+} = require("../models/RefreshRun");
 
 const fetchProgress = (str) => {
   const progress = str
@@ -142,6 +147,11 @@ class StreamsService {
   }
 
   static async refreshPlaylistsStreams() {
+    const refreshRun = await RefreshRun.create({
+      type: REFRESH_RUN_TYPES.PLAYLIST_STREAMS,
+      status: REFRESH_RUN_STATUS.RUNNING,
+    });
+
     const child = spawn("npm", [
       "run",
       "cypress",
@@ -164,6 +174,15 @@ class StreamsService {
     });
 
     child.on("exit", function (code, signal) {
+      if (code === 0) {
+        refreshRun.status = REFRESH_RUN_STATUS.COMPLETED;
+        refreshRun.completedAt = new Date();
+        refreshRun.save();
+      } else {
+        refreshRun.status = REFRESH_RUN_STATUS.FAILED;
+        refreshRun.failedAt = new Date();
+        refreshRun.save();
+      }
       console.log(
         "child process exited with " + `code ${code} and signal ${signal}`
       );

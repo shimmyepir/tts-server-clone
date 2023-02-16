@@ -21,6 +21,7 @@ const {
   artistReport,
   addPlaylistStreams,
   fetchPlaylistsStreams,
+  getLatestStreamsRefreshRun,
 } = require("../controllers/playlistController");
 
 router.get("/", getPlaylists);
@@ -30,6 +31,7 @@ router.get("/tests", playGround);
 router.get("/artist-report", artistReport);
 router.post("/refresh-campaigns", refreshCampaignsAdData);
 router.post("/refresh-streams", fetchPlaylistsStreams);
+router.get("/streams-refresh-run", getLatestStreamsRefreshRun);
 router
   .route("/:id")
   .get(getPlaylist)

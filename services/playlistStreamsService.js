@@ -35,7 +35,6 @@ class PlaylistStreamsService {
         },
       },
     ]);
-    // console.log(data);
 
     if (!data[0])
       return {

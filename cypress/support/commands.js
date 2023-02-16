@@ -32,7 +32,6 @@ Cypress.Commands.add("getPlaylistsStreams", (playlists, artist) => {
     cy.intercept({
       url: `https://generic.wg.spotify.com/s4x-insights-api/v1/artist/${artist.id}/playlists/listener?time-filter=1day`,
     }).as("listeners");
-
     cy.wait("@listeners").then((interception) => {
       const foundPlaylists = [];
       playlists.forEach((playlist) => {
