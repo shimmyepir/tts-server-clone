@@ -3,7 +3,7 @@ const { format, sub } = require("date-fns");
 const util = require("util");
 
 const axiosClient = axios.create({
-  baseURL: "https://graph.facebook.com/v13.0",
+  baseURL: "https://graph.facebook.com/v15.0",
 });
 
 const AD_ACCOUNT_IDS = [
