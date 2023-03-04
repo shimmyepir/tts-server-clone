@@ -7,6 +7,7 @@ const {
   REFRESH_RUN_STATUS,
   REFRESH_RUN_TYPES,
 } = require("../models/RefreshRun");
+const { lastXDays } = require("./playlistServices");
 
 const fetchProgress = (str) => {
   const progress = str
@@ -24,6 +25,7 @@ const fetchProgress = (str) => {
 class StreamsService {
   static formatStreamsData(streamsData, spendsData) {
     const formattedStreams = {};
+    const days = lastXDays(30);
 
     // Add income and spend data to streams object for each country leaving out worldwide
     Object.keys(streamsData).forEach((key) => {

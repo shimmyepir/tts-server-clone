@@ -119,7 +119,7 @@ const getFollowersBetweenDates = async (
 };
 
 const lastXDays = (days) => {
-  const endDate = endOfDay(new Date());
+  const endDate = endOfDay(new Date("2023-01-31"));
   const dates = [];
   for (let i = days; i >= 0; i--) {
     dates.push(sub(endDate, { days: i }));

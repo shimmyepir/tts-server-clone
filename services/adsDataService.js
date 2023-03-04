@@ -256,7 +256,7 @@ class AdDataService {
 
   static async getDailySpendsAndFollowers(playlist) {
     const { campaigns } = playlist;
-    const dates = lastXDays(27);
+    const dates = lastXDays(31);
     const dailySpends = {};
     let followers = [];
     dates.forEach((date) => {
@@ -275,8 +275,8 @@ class AdDataService {
         $match: {
           spotify_id: playlist.spotifyId,
           date: {
-            $gte: startOfDay(sub(new Date(), { days: 27 })),
-            $lte: endOfDay(new Date()),
+            $gte: startOfDay(sub(new Date("2023-01-31"), { days: 31 })),
+            $lte: endOfDay(new Date("2023-01-31")),
           },
         },
       },
@@ -302,8 +302,8 @@ class AdDataService {
     const data = await AdData.find({
       campaign_id,
       date: {
-        $gte: startOfDay(sub(new Date(), { days })),
-        $lte: endOfDay(new Date()),
+        $gte: startOfDay(sub(new Date("2023-01-31"), { days })),
+        $lte: endOfDay(new Date("2023-01-31")),
       },
     }).sort("date");
     return data.map((item) => ({
@@ -332,8 +332,8 @@ class AdDataService {
         $match: {
           artistName: "kato",
           date: {
-            $gte: startOfDay(sub(new Date(), { days })),
-            $lte: endOfDay(new Date()),
+            $gte: startOfDay(sub(new Date("2023-01-31"), { days })),
+            $lte: endOfDay(new Date("2023-01-31")),
           },
         },
       },

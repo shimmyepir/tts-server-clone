@@ -245,7 +245,7 @@ exports.campaignsDailyStats = catchAsyncErrors(async (req, res, next) => {
     playlist.campaigns.map(async (campaign) => {
       const stats = await AdDataService.getDailyAdData(
         campaign.campaign_id,
-        27
+        31
       );
       return {
         campaign_id: campaign.campaign_id,
@@ -255,6 +255,7 @@ exports.campaignsDailyStats = catchAsyncErrors(async (req, res, next) => {
       };
     })
   );
+  console.log(data);
   res.status(200).json({ data });
 });
 
