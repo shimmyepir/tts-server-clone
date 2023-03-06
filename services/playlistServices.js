@@ -118,8 +118,8 @@ const getFollowersBetweenDates = async (
   return total;
 };
 
-const lastXDays = (days) => {
-  const endDate = endOfDay(new Date("2023-01-31"));
+const lastXDays = (days, dateTo) => {
+  const endDate = dateTo ? endOfDay(new Date(dateTo)) : endOfDay(new Date());
   const dates = [];
   for (let i = days; i >= 0; i--) {
     dates.push(sub(endDate, { days: i }));
@@ -127,8 +127,8 @@ const lastXDays = (days) => {
   return dates;
 };
 
-const followersDaily = async (id, total, days = 27) => {
-  const dates = lastXDays(days);
+const followersDaily = async (id, total, days = 27, dateTo) => {
+  const dates = lastXDays(days, dateTo || new Date());
   const data = [];
   await Promise.all(
     dates.map(async (date) => {

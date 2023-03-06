@@ -254,9 +254,9 @@ class AdDataService {
     return data[0];
   }
 
-  static async getDailySpendsAndFollowers(playlist) {
+  static async getDailySpendsAndFollowers(playlist, endDate = new Date()) {
     const { campaigns } = playlist;
-    const dates = lastXDays(31);
+    const dates = lastXDays(31, endDate);
     const dailySpends = {};
     let followers = [];
     dates.forEach((date) => {
@@ -275,8 +275,8 @@ class AdDataService {
         $match: {
           spotify_id: playlist.spotifyId,
           date: {
-            $gte: startOfDay(sub(new Date("2023-01-31"), { days: 31 })),
-            $lte: endOfDay(new Date("2023-01-31")),
+            $gte: startOfDay(sub(new Date(endDate), { days: 27 })),
+            $lte: endOfDay(new Date(endDate)),
           },
         },
       },
@@ -294,16 +294,17 @@ class AdDataService {
       const { date, spend } = item;
       dailySpends[date] = Number(spend.toFixed(2));
     });
-    followers = await followersDaily(playlist.spotifyId, false, 27);
+
+    followers = await followersDaily(playlist.spotifyId, false, 27, endDate);
     return { dailySpends, followers };
   }
 
-  static async getDailyAdData(campaign_id, days) {
+  static async getDailyAdData(campaign_id, days, endDate) {
     const data = await AdData.find({
       campaign_id,
       date: {
-        $gte: startOfDay(sub(new Date("2023-01-31"), { days })),
-        $lte: endOfDay(new Date("2023-01-31")),
+        $gte: startOfDay(sub(new Date(endDate), { days })),
+        $lte: endOfDay(new Date(endDate)),
       },
     }).sort("date");
     return data.map((item) => ({

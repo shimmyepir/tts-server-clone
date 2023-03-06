@@ -24,6 +24,17 @@ const PlaylistStreams = require("../models/PlaylistStreams");
 const StreamsService = require("../services/streamsService");
 const PlaylistStreamsService = require("../services/playlistStreamsService");
 const { RefreshRun, REFRESH_RUN_TYPES } = require("../models/RefreshRun");
+const InfluencerSpend = require("../models/InfluencerSpend");
+
+const CAMPAIGN_TYPES = {
+  INFLUENCER: "influencer",
+  SOCIAL_PLATFORM: "social_platform",
+};
+
+const getDate = (date) => {
+  const dateArray = date.split("-").map(Number);
+  return new Date(dateArray[0], dateArray[1] - 1, dateArray[2], 10);
+};
 
 exports.addPlaylist = catchAsyncErrors(async (req, res) => {
   const { id } = req.params;
@@ -104,32 +115,68 @@ exports.followersPerDayPerPeriod = catchAsyncErrors(async (req, res) => {
 
 exports.addCampaign = catchAsyncErrors(async (req, res, next) => {
   const { id } = req.params;
-  const { campaignId, platform, user, advertiserId } = req.body;
+  const {
+    campaignId,
+    platform,
+    user,
+    advertiserId,
+    campaignType,
+    spend,
+    influencerName,
+    date,
+  } = req.body;
+
+  if (
+    campaignType === CAMPAIGN_TYPES.SOCIAL_PLATFORM &&
+    (!campaignId || !platform || !user)
+  )
+    return next(
+      new AppError("Campaign Id, Platform and User are required", 400)
+    );
+
   if (platform === "tiktok" && !advertiserId) {
     return next(new AppError("Advertiser Id is required for tiktok", 400));
   }
 
+  if (
+    campaignType === CAMPAIGN_TYPES.INFLUENCER &&
+    (!influencerName || !spend || !date)
+  )
+    return next(
+      new AppError("Influencer name, spend and date are required", 400)
+    );
+
   const playlist = await Playlist.findOne({ spotifyId: id });
-  const existingPlaylist = playlist.campaigns.find(
-    (campaign) => campaign.campaign_id === campaignId
-  );
+  if (campaignType === CAMPAIGN_TYPES.SOCIAL_PLATFORM) {
+    const existingPlaylist = playlist.campaigns.find(
+      (campaign) => campaign.campaign_id === campaignId
+    );
 
-  if (existingPlaylist)
-    return next(new AppError("This campaign has been added already", 400));
+    if (existingPlaylist)
+      return next(new AppError("This campaign has been added already", 400));
 
-  playlist.campaigns.push({
-    campaign_id: campaignId,
-    platform,
-    user,
-    advertiser_id: advertiserId,
-  });
-  await playlist.save();
-  await AdDataService.addNewCampaignAdData(
-    campaignId,
-    platform,
-    id,
-    advertiserId
-  );
+    playlist.campaigns.push({
+      campaign_id: campaignId,
+      platform,
+      user,
+      advertiser_id: advertiserId,
+    });
+    await playlist.save();
+    await AdDataService.addNewCampaignAdData(
+      campaignId,
+      platform,
+      id,
+      advertiserId
+    );
+  } else {
+    await InfluencerSpend.create({
+      spotifyId: id,
+      spend: parseFloat(spend),
+      influencerName,
+      date: getDate(date),
+      formattedDate: date,
+    });
+  }
   res.status(200).json({ playlist });
 });
 
@@ -176,16 +223,33 @@ exports.getCampaignsReport = catchAsyncErrors(async (req, res) => {
       startDate,
       endDate
     );
-  res.status(200).json({ ...report, followers, playlistStreams });
+
+  const influencerSpend = await InfluencerSpend.aggregate([
+    {
+      $match: {
+        spotifyId: id,
+        date: {
+          $gte: startOfDay(new Date(startDate)),
+          $lte: endOfDay(new Date(endDate)),
+        },
+      },
+    },
+  ]);
+
+  res
+    .status(200)
+    .json({ ...report, followers, playlistStreams, influencerSpend });
 });
 
 exports.getDailyCampaignsReport = catchAsyncErrors(async (req, res, next) => {
   const { id } = req.params;
+  const { endDate } = req.query;
   const playlist = await Playlist.findOne({ spotifyId: id });
   if (playlist.campaigns.length < 1)
     return next(new AppError("No campaigns found", 400));
   const dailySpendFollowers = await AdDataService.getDailySpendsAndFollowers(
-    playlist
+    playlist,
+    endDate
   );
   const dailySpendPerFollower =
     formatDailySpendPerFollower(dailySpendFollowers);
@@ -238,6 +302,8 @@ exports.refreshCampaignsAdData = catchAsyncErrors(async (req, res) => {
 
 exports.campaignsDailyStats = catchAsyncErrors(async (req, res, next) => {
   const { id } = req.params;
+  const { endDate } = req.query;
+
   const playlist = await Playlist.findOne({ spotifyId: id });
   if (!playlist || (playlist && playlist.campaigns.length < 2))
     return next(new AppError("No campaigns found", 400));
@@ -245,7 +311,8 @@ exports.campaignsDailyStats = catchAsyncErrors(async (req, res, next) => {
     playlist.campaigns.map(async (campaign) => {
       const stats = await AdDataService.getDailyAdData(
         campaign.campaign_id,
-        31
+        27,
+        endDate
       );
       return {
         campaign_id: campaign.campaign_id,
@@ -255,7 +322,6 @@ exports.campaignsDailyStats = catchAsyncErrors(async (req, res, next) => {
       };
     })
   );
-  console.log(data);
   res.status(200).json({ data });
 });
 
