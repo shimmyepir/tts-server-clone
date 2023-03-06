@@ -224,17 +224,13 @@ exports.getCampaignsReport = catchAsyncErrors(async (req, res) => {
       endDate
     );
 
-  const influencerSpend = await InfluencerSpend.aggregate([
-    {
-      $match: {
-        spotifyId: id,
-        date: {
-          $gte: startOfDay(new Date(startDate)),
-          $lte: endOfDay(new Date(endDate)),
-        },
-      },
+  const influencerSpend = await InfluencerSpend.find({
+    spotifyId: id,
+    date: {
+      $gte: startOfDay(new Date(startDate)),
+      $lte: endOfDay(new Date(endDate)),
     },
-  ]);
+  });
 
   res
     .status(200)
