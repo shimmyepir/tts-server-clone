@@ -52,4 +52,4 @@ jobs:
           ENV_EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
 
       - run: npm i
-      - run: pm2 reload server
+      - run: pm2 reload server-clone

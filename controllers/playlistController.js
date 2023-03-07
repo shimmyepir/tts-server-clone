@@ -109,7 +109,13 @@ exports.getPlaylists = catchAsyncErrors(async (req, res) => {
 });
 
 exports.followersPerDayPerPeriod = catchAsyncErrors(async (req, res) => {
-  const followersPerDay = await followersDaily(req.params.id, true);
+  const { endDate } = req.query;
+  const followersPerDay = await followersDaily(
+    req.params.id,
+    true,
+    27,
+    endDate
+  );
   res.status(200).json({ followersPerDay });
 });
 

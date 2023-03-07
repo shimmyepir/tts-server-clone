@@ -10,7 +10,7 @@ const { getKeyByValue } = require("../utils/helpers");
 const katoStreams = require("./kato");
 
 // generate a random number between 0.60 and 0.90
-const random = () => Math.random() * (1.7 - 0.9) + 0.9;
+const random = () => Math.random() * (1.5 - 1.4) + 1.4;
 
 exports.getArtistEarningsSpends = catchAsyncErrors(async (req, res, next) => {
   const spends = await AdDataService.playlistSpendPerDayByCountry(29);
